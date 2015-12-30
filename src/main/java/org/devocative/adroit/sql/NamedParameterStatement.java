@@ -13,15 +13,15 @@ import java.util.regex.Pattern;
 
 public class NamedParameterStatement {
 	private static final Logger logger = LoggerFactory.getLogger(NamedParameterStatement.class);
-	private static final Set<String> KEYWORDS = new HashSet<String>();
+	private static final Set<String> KEYWORDS = new HashSet<>();
 
 	static {
 		KEYWORDS.add("set");
 		KEYWORDS.add("dual");
 	}
 
-	private Map<String, List<Integer>> paramsPlacement = new HashMap<String, List<Integer>>();
-	private Map<String, Object> params = new HashMap<String, Object>();
+	private Map<String, List<Integer>> paramsPlacement = new HashMap<>();
+	private Map<String, Object> params = new HashMap<>();
 
 	private boolean hasBatch = false;
 	private boolean utilDate2SqlDate = false;
@@ -160,7 +160,7 @@ public class NamedParameterStatement {
 	}
 
 	public Map<String, Object> getParams() {
-		return new HashMap<String, Object>(params);
+		return new HashMap<>(params);
 	}
 
 	public Connection getConnection() {
@@ -259,7 +259,7 @@ public class NamedParameterStatement {
 
 	private void applyAllParams() throws SQLException {
 		// Validate all params existence
-		List<String> missedParams = new ArrayList<String>();
+		List<String> missedParams = new ArrayList<>();
 		for (String param : paramsPlacement.keySet()) {
 			if (!params.containsKey(param)) {
 				missedParams.add(param);
