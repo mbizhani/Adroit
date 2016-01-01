@@ -11,6 +11,24 @@ public class DateFieldVO implements Serializable {
 	private int minute;
 	private int second;
 
+	public DateFieldVO() {
+	}
+
+	public DateFieldVO(int year, int month, int day) {
+		this.year = year;
+		this.month = month;
+		this.day = day;
+	}
+
+	public DateFieldVO(int year, int month, int day, int hour, int minute, int second) {
+		this.year = year;
+		this.month = month;
+		this.day = day;
+		this.hour = hour;
+		this.minute = minute;
+		this.second = second;
+	}
+
 	public int getYear() {
 		return year;
 	}
