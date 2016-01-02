@@ -22,7 +22,7 @@ public class CalendarUtil {
 			.setYear(calendar.get(Calendar.YEAR))
 			.setMonth(calendar.get(Calendar.MONTH) + 1)
 			.setDay(calendar.get(Calendar.DAY_OF_MONTH))
-			.setHour(calendar.get(Calendar.HOUR))
+			.setHour(calendar.get(Calendar.HOUR_OF_DAY))
 			.setMinute(calendar.get(Calendar.MINUTE))
 			.setSecond(calendar.get(Calendar.SECOND))
 			;
@@ -37,7 +37,7 @@ public class CalendarUtil {
 		calendar.set(Calendar.YEAR, dateField.getYear());
 		calendar.set(Calendar.MONTH, dateField.getMonth() - 1);
 		calendar.set(Calendar.DAY_OF_MONTH, dateField.getDay());
-		calendar.set(Calendar.HOUR, dateField.getHour());
+		calendar.set(Calendar.HOUR_OF_DAY, dateField.getHour());
 		calendar.set(Calendar.MINUTE, dateField.getMinute());
 		calendar.set(Calendar.SECOND, dateField.getSecond());
 		return calendar.getTime();
@@ -50,7 +50,7 @@ public class CalendarUtil {
 			.setYear(calendar.get(Calendar.YEAR))
 			.setMonth(calendar.get(Calendar.MONTH) + 1)
 			.setDay(calendar.get(Calendar.DAY_OF_MONTH))
-			.setHour(calendar.get(Calendar.HOUR))
+			.setHour(calendar.get(Calendar.HOUR_OF_DAY))
 			.setMinute(calendar.get(Calendar.MINUTE))
 			.setSecond(calendar.get(Calendar.SECOND))
 			;
@@ -61,7 +61,7 @@ public class CalendarUtil {
 		calendar.set(Calendar.YEAR, dateField.getYear());
 		calendar.set(Calendar.MONTH, dateField.getMonth() - 1);
 		calendar.set(Calendar.DAY_OF_MONTH, dateField.getDay());
-		calendar.set(Calendar.HOUR, dateField.getHour());
+		calendar.set(Calendar.HOUR_OF_DAY, dateField.getHour());
 		calendar.set(Calendar.MINUTE, dateField.getMinute());
 		calendar.set(Calendar.SECOND, dateField.getSecond());
 		return calendar.getTime();
