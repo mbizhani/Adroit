@@ -66,4 +66,8 @@ public class CalendarUtil {
 		calendar.set(Calendar.SECOND, dateField.getSecond());
 		return calendar.getTime();
 	}
+
+	public static String formatDate(Date dt, String pattern) {
+		return new SimpleDateFormat(pattern).format(dt);
+	}
 }
