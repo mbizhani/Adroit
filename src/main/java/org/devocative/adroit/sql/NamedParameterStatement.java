@@ -3,6 +3,7 @@ package org.devocative.adroit.sql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +25,7 @@ public class NamedParameterStatement {
 	private Map<String, Object> params = new HashMap<>();
 
 	private boolean hasBatch = false;
-	private boolean utilDate2SqlDate = false;
+	private Class<? extends Date> dateClassReplacement;
 	private String query, finalQuery, schema, id;
 
 	private Connection connection;
@@ -120,12 +121,8 @@ public class NamedParameterStatement {
 		return this;
 	}
 
-	public boolean isUtilDate2SqlDate() {
-		return utilDate2SqlDate;
-	}
-
-	public NamedParameterStatement setUtilDate2SqlDate(boolean utilDate2SqlDate) {
-		this.utilDate2SqlDate = utilDate2SqlDate;
+	public NamedParameterStatement setDateClassReplacement(Class<? extends Date> dateClassReplacement) {
+		this.dateClassReplacement = dateClassReplacement;
 		return this;
 	}
 
@@ -134,21 +131,12 @@ public class NamedParameterStatement {
 	}
 
 	public NamedParameterStatement addOrReplaceParameter(String name, Object value) {
-		name = name.toLowerCase();
-		params.put(name, value);
+		params.put(name.toLowerCase(), value);
 		return this;
 	}
 
 	public NamedParameterStatement setParameter(String name, Object value) {
-		name = name.toLowerCase();
-		if (paramsPlacement.containsKey(name)) {
-			if (!params.containsKey(name)) {
-				params.put(name, value);
-			} else {
-				throw new RuntimeException(String.format("Duplicate parameter definition: %s, values={old: %s, new: %s}",
-					name, params.get(name), value));
-			}
-		}
+		params.put(name.toLowerCase(), value);
 		return this;
 	}
 
@@ -241,7 +229,18 @@ public class NamedParameterStatement {
 					paramsPlacement.put(param, new ArrayList<Integer>());
 				}
 				paramsPlacement.get(param).add(noOfParams);
-				matcher.appendReplacement(builder, "?");
+
+				Object paramValue = params.get(param);
+				StringBuilder paramReplacementBuilder = new StringBuilder("?");
+				if (paramValue instanceof Collection || paramValue.getClass().isArray()) {
+					int size = paramValue instanceof Collection ?
+						((Collection) paramValue).size() :
+						((Object[]) paramValue).length;
+					for (int i = 1; i < size; i++) {
+						paramReplacementBuilder.append(",?");
+					}
+				}
+				matcher.appendReplacement(builder, paramReplacementBuilder.toString());
 			}
 		}
 		matcher.appendTail(builder);
@@ -253,6 +252,12 @@ public class NamedParameterStatement {
 
 		logger.debug("Final SQL: {}", finalQuery);
 		logger.debug("Number of params: {}", noOfParams);
+
+		for (String param : params.keySet()) {
+			if (!paramsPlacement.containsKey(param)) {
+				throw new SQLException("Parameter not found: " + param);
+			}
+		}
 
 		preparedStatement = connection.prepareStatement(finalQuery);
 	}
@@ -266,27 +271,55 @@ public class NamedParameterStatement {
 			}
 		}
 
-		if (missedParams.size() == 0) {
-			// Set all params in preparedStatement
-			for (Map.Entry<String, Object> paramsEntry : params.entrySet()) {
-				List<Integer> positions = paramsPlacement.get(paramsEntry.getKey());
-				for (Integer position : positions) {
-					Object val = paramsEntry.getValue();
-					if (val.getClass().equals(Date.class)) {
-						if (utilDate2SqlDate) {
-							Date dt = (Date) val;
-							val = new java.sql.Date(dt.getTime());
-						} else {
-							logger.warn("NPS param=[{}] has java.util.Date value, you can call setUtilDate2SqlDate(true)", paramsEntry.getKey());
-						}
-					}
-					preparedStatement.setObject(position, val);
-				}
-			}
-			params.clear();
-		} else {
+		if (missedParams.size() > 0) {
 			throw new RuntimeException(String.format("Parameter(s) missed for query %s: %s", id, missedParams));
 		}
+
+		TreeMap<Integer, Object> paramsByPlace = new TreeMap<>();
+		for (Map.Entry<String, Object> paramsEntry : params.entrySet()) {
+			List<Integer> positions = paramsPlacement.get(paramsEntry.getKey());
+			for (Integer position : positions) {
+				paramsByPlace.put(position, paramsEntry.getValue());
+			}
+		}
+
+		int paramIndex = 1;
+
+		for (Map.Entry<Integer, Object> paramEntry : paramsByPlace.entrySet()) {
+			Object val = paramEntry.getValue();
+			if (val instanceof Collection || val.getClass().isArray()) {
+				Iterator it = val instanceof Collection ?
+					((Collection) val).iterator() :
+					Arrays.asList(((Object[]) val)).iterator();
+
+				while (it.hasNext()) {
+					addValToPS(paramIndex, it.next());
+					paramIndex++;
+				}
+			} else {
+				addValToPS(paramIndex, val);
+				paramIndex++;
+			}
+		}
+
+		params.clear();
+	}
+
+	private void addValToPS(int index, Object val) throws SQLException {
+		if (val.getClass().equals(Date.class)) {
+			if (dateClassReplacement != null) {
+				Date dt = (Date) val;
+				try {
+					Constructor<? extends Date> constructor = dateClassReplacement.getConstructor(Long.class);
+					val = constructor.newInstance(dt.getTime());
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				logger.warn("NPS param=[{}] has java.util.Date value, you can call setDateClassReplacement(<new class>)", index);
+			}
+		}
+		preparedStatement.setObject(index, val);
 	}
 
 }
