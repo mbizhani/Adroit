@@ -31,4 +31,9 @@ public class RangeVO<T extends Serializable> implements Serializable {
 		this.upper = upper;
 		return this;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("[ {%s} , {%s} )", getLower(), getUpper());
+	}
 }

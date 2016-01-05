@@ -310,7 +310,7 @@ public class NamedParameterStatement {
 			if (dateClassReplacement != null) {
 				Date dt = (Date) val;
 				try {
-					Constructor<? extends Date> constructor = dateClassReplacement.getConstructor(Long.class);
+					Constructor<? extends Date> constructor = dateClassReplacement.getDeclaredConstructor(long.class);
 					val = constructor.newInstance(dt.getTime());
 				} catch (Exception e) {
 					throw new RuntimeException(e);
