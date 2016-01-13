@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 public class ConfigUtil {
-	private static final String ENC_SUFFIX = ".END";
+	private static final String ENC_SUFFIX = ".ENC";
 	private static final Properties PROPERTIES = new Properties();
 
 	static {

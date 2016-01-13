@@ -49,6 +49,24 @@ public class TestAdroit {
 			no++;
 		}
 
-		Assert.assertEquals(no, 2);
+		Assert.assertEquals(2, no);
+	}
+
+	@Test
+	public void testConfigUtil() {
+		Assert.assertEquals(123L, ConfigUtil.getInteger(true, "int.key").longValue());
+
+		Assert.assertTrue(ConfigUtil.getBoolean(true, "bool.key"));
+
+		Assert.assertEquals(987654321L, ConfigUtil.getLong(true, "long.key").longValue());
+
+		Assert.assertEquals("Hello", ConfigUtil.getString(true, "string.key"));
+
+		Assert.assertEquals("salam", ConfigUtil.getString(true, "encrypted.key"));
+	}
+
+	@Test
+	public void testStringEncryptorUtil() {
+		//TODO
 	}
 }
