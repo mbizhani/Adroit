@@ -95,6 +95,28 @@ public class ConfigUtil {
 		}
 	}
 
+
+	public static List<String> getList(boolean validate, String key) {
+		String value = getString(validate, key);
+		if (value != null) {
+			List<String> result = new ArrayList<>();
+			Collections.addAll(result, value.split("[,]"));
+			return result;
+		}
+		return null;
+	}
+
+	public static List<String> getList(String key, List<String> defaultValue) {
+		String value = getString(false, key);
+		if (value != null) {
+			List<String> result = new ArrayList<>();
+			Collections.addAll(result, value.split("[,]"));
+			return result;
+		}
+		return defaultValue;
+	}
+
+
 	public static void updateProperty(String key, String value) {
 		if (PROPERTIES.containsKey(key + ENC_SUFFIX)) {
 			PROPERTIES.setProperty(key + ENC_SUFFIX, StringEncryptorUtil.encrypt(value));

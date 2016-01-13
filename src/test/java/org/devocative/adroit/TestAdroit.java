@@ -63,6 +63,8 @@ public class TestAdroit {
 		Assert.assertEquals("Hello", ConfigUtil.getString(true, "string.key"));
 
 		Assert.assertEquals("salam", ConfigUtil.getString(true, "encrypted.key"));
+
+		Assert.assertEquals(3, ConfigUtil.getList(true, "list.key").size());
 	}
 
 	@Test
