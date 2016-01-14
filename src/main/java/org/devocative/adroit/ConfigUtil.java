@@ -98,19 +98,30 @@ public class ConfigUtil {
 
 	public static List<String> getList(boolean validate, String key) {
 		String value = getString(validate, key);
+
+		List<String> result = new ArrayList<>();
 		if (value != null) {
-			List<String> result = new ArrayList<>();
-			Collections.addAll(result, value.split("[,]"));
-			return result;
+			String[] parts = value.split("[,]");
+			for (String part : parts) {
+				if (part.trim().length() > 0) {
+					result.add(part.trim());
+				}
+			}
 		}
-		return null;
+		return result;
 	}
 
 	public static List<String> getList(String key, List<String> defaultValue) {
 		String value = getString(false, key);
+
 		if (value != null) {
 			List<String> result = new ArrayList<>();
-			Collections.addAll(result, value.split("[,]"));
+			String[] parts = value.split("[,]");
+			for (String part : parts) {
+				if (part.trim().length() > 0) {
+					result.add(part.trim());
+				}
+			}
 			return result;
 		}
 		return defaultValue;
