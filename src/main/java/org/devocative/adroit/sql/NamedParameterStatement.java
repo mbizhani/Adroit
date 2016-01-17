@@ -33,6 +33,7 @@ public class NamedParameterStatement {
 
 	private int batchSizeToFlush = 10000;
 	private long totalBatchCount = 0, batchCount = 0;
+	private Integer fetchSize, queryTimeout, maxRows;
 
 	public NamedParameterStatement(Connection connection) {
 		this(connection, null, null);
@@ -94,17 +95,18 @@ public class NamedParameterStatement {
 		return this;
 	}
 
-	public Integer getFetchSize() throws SQLException {
-		return preparedStatement.getFetchSize();
-	}
-
-	public NamedParameterStatement setFetchSize(int fetchSize) throws SQLException {
-		preparedStatement.setFetchSize(fetchSize);
+	public NamedParameterStatement setFetchSize(int fetchSize) {
+		this.fetchSize = fetchSize;
 		return this;
 	}
 
-	public NamedParameterStatement setQueryTimeout(int timeoutInSeconds) throws SQLException {
-		preparedStatement.setQueryTimeout(timeoutInSeconds);
+	public NamedParameterStatement setQueryTimeout(int timeoutInSeconds) {
+		this.queryTimeout = timeoutInSeconds;
+		return this;
+	}
+
+	public NamedParameterStatement setMaxRows(Integer maxRows) {
+		this.maxRows = maxRows;
 		return this;
 	}
 
@@ -260,6 +262,17 @@ public class NamedParameterStatement {
 		}
 
 		preparedStatement = connection.prepareStatement(finalQuery);
+		if (fetchSize != null) {
+			preparedStatement.setFetchSize(fetchSize);
+		}
+
+		if (queryTimeout != null) {
+			preparedStatement.setQueryTimeout(queryTimeout);
+		}
+
+		if (maxRows != null) {
+			preparedStatement.setMaxRows(maxRows);
+		}
 	}
 
 	private void applyAllParams() throws SQLException {
