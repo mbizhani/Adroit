@@ -34,9 +34,13 @@ public class TestAdroit {
 
 	@Test
 	public void testNPS() throws Exception {
-		Class.forName("org.h2.Driver");
+		Class.forName(ConfigUtil.getString(true, "db.driver"));
 
-		Connection sa = DriverManager.getConnection("jdbc:h2:tcp://localhost:9092/adroit", "sa", "");
+		Connection sa = DriverManager.getConnection(
+			ConfigUtil.getString(true, "db.url"),
+			ConfigUtil.getString(true, "db.username"),
+			ConfigUtil.getString("db.password", ""));
+
 		NamedParameterStatement nps =
 			new NamedParameterStatement(sa)
 				.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")

@@ -50,12 +50,7 @@
 			<version>56.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.3.175</version>
-			<scope>test</scope>
-		</dependency>
+		<!-- TEST SCOPE -->
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -64,10 +59,15 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>connectorj</artifactId>
+			<version>5.1.36</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
-
 		<plugins>
 			<plugin>
 				<inherited>true</inherited>
@@ -80,36 +80,6 @@
 					<encoding>UTF-8</encoding>
 					<showWarnings>true</showWarnings>
 					<showDeprecation>true</showDeprecation>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>com.edugility</groupId>
-				<artifactId>h2-maven-plugin</artifactId>
-				<version>1.0</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>sql-maven-plugin</artifactId>
-				<version>1.5</version>
-				<dependencies>
-					<!-- specify the dependent JDBC driver here -->
-					<dependency>
-						<groupId>com.h2database</groupId>
-						<artifactId>h2</artifactId>
-						<version>1.3.175</version>
-					</dependency>
-				</dependencies>
-				<configuration>
-					<driver>org.h2.Driver</driver>
-					<url>jdbc:h2:tcp://localhost:9092/adroit</url>
-					<username>sa</username>
-					<password></password>
-					<delimiter>;</delimiter>
-					<srcFiles>
-						<srcFile>${project.basedir}/src/test/resources/init.sql</srcFile>
-					</srcFiles>
 				</configuration>
 			</plugin>
 		</plugins>
