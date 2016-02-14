@@ -26,6 +26,8 @@ public class ConfigUtil {
 		}
 	}
 
+	// ******************* String
+
 	public static String getString(boolean validate, String key) {
 		String value = PROPERTIES.getProperty(key);
 
@@ -56,6 +58,13 @@ public class ConfigUtil {
 		return value != null ? value : defaultValue;
 	}
 
+	public static String getString(IConfigKey configKey) {
+		return configKey.getValidate() ?
+			getString(true, configKey.getKey()) :
+			getString(configKey.getKey(), (String) configKey.getDefaultValue());
+	}
+
+	// ******************* Boolean
 
 	public static Boolean getBoolean(boolean validate, String key) {
 		return Boolean.valueOf(getString(validate, key));
@@ -69,6 +78,13 @@ public class ConfigUtil {
 		}
 	}
 
+	public static Boolean getBoolean(IConfigKey configKey) {
+		return configKey.getValidate() ?
+			getBoolean(true, configKey.getKey()) :
+			getBoolean(configKey.getKey(), (Boolean) configKey.getDefaultValue());
+	}
+
+	// ******************* Integer
 
 	public static Integer getInteger(boolean validate, String key) {
 		return Integer.valueOf(getString(validate, key));
@@ -82,6 +98,13 @@ public class ConfigUtil {
 		}
 	}
 
+	public static Integer getInteger(IConfigKey configKey) {
+		return configKey.getValidate() ?
+			getInteger(true, configKey.getKey()) :
+			getInteger(configKey.getKey(), (Integer) configKey.getDefaultValue());
+	}
+
+	// ******************* Long
 
 	public static Long getLong(boolean validate, String key) {
 		return Long.valueOf(getString(validate, key));
@@ -95,6 +118,13 @@ public class ConfigUtil {
 		}
 	}
 
+	public static Long getLong(IConfigKey configKey) {
+		return configKey.getValidate() ?
+			getLong(true, configKey.getKey()) :
+			getLong(configKey.getKey(), (Long) configKey.getDefaultValue());
+	}
+
+	// ******************* List<String>
 
 	public static List<String> getList(boolean validate, String key) {
 		String value = getString(validate, key);
@@ -127,6 +157,13 @@ public class ConfigUtil {
 		return defaultValue;
 	}
 
+	public static List<String> getList(IConfigKey configKey) {
+		return configKey.getValidate() ?
+			getList(true, configKey.getKey()) :
+			getList(configKey.getKey(), (List<String>) configKey.getDefaultValue());
+	}
+
+	// ******************* Other Methods
 
 	public static void updateProperty(String key, String value) {
 		if (PROPERTIES.containsKey(key + ENC_SUFFIX)) {
