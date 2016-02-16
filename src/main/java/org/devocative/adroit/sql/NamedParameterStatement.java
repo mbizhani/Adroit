@@ -234,7 +234,7 @@ public class NamedParameterStatement {
 
 				Object paramValue = params.get(param);
 				StringBuilder paramReplacementBuilder = new StringBuilder("?");
-				if (paramValue instanceof Collection || paramValue.getClass().isArray()) {
+				if (paramValue != null && (paramValue instanceof Collection || paramValue.getClass().isArray())) {
 					int size = paramValue instanceof Collection ?
 						((Collection) paramValue).size() :
 						((Object[]) paramValue).length;
@@ -300,7 +300,7 @@ public class NamedParameterStatement {
 
 		for (Map.Entry<Integer, Object> paramEntry : paramsByPlace.entrySet()) {
 			Object val = paramEntry.getValue();
-			if (val instanceof Collection || val.getClass().isArray()) {
+			if (val != null && (val instanceof Collection || val.getClass().isArray())) {
 				Iterator it = val instanceof Collection ?
 					((Collection) val).iterator() :
 					Arrays.asList(((Object[]) val)).iterator();
@@ -319,7 +319,7 @@ public class NamedParameterStatement {
 	}
 
 	private void addValToPS(int index, Object val) throws SQLException {
-		if (val.getClass().equals(Date.class)) {
+		if (val != null && val.getClass().equals(Date.class)) {
 			if (dateClassReplacement != null) {
 				Date dt = (Date) val;
 				try {
