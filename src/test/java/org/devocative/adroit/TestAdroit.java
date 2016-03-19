@@ -82,6 +82,17 @@ public class TestAdroit {
 
 	@Test
 	public void testStringEncryptorUtil() {
-		//TODO
+		System.out.println(StringEncryptorUtil.hash("Hello World!"));
+
+		System.out.println(StringEncryptorUtil.hash(""));
+
+		try {
+			System.out.println(StringEncryptorUtil.hash(null));
+			Assert.assertTrue(false);
+		} catch (NullPointerException e) {
+			Assert.assertTrue(true);
+		}
+
+		//TODO test enc/dec
 	}
 }
