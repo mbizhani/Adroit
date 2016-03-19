@@ -1,5 +1,5 @@
 # Adroit
-========
+
 The `Adroit` project is a collection of utility classes, specially used in Demeter project. Some of important classes
 are as follows:
 
