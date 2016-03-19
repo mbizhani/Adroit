@@ -1,3 +1,4 @@
+-- The schema needed for testing NamedParameterStatement in TestAdroit class. This schema is provided for Oracle database.
 DROP TABLE IF EXISTS t_person;
 DROP TABLE IF EXISTS t_education;
 

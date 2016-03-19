@@ -1,3 +1,5 @@
+-- The schema needed for testing NamedParameterStatement in TestAdroit class. This schema is provided for MySQL database.
+
 CREATE TABLE t_person (
   id           INT,
   c_name       VARCHAR(255),
