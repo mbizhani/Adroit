@@ -13,6 +13,10 @@ public class StringEncryptorUtil {
 		StringEncryptorUtil.bypassSecurity = bypassSecurity;
 	}
 
+	public static String encodeBase64(byte[] b) {
+		return Base64.encodeBase64String(b);
+	}
+
 	public static String hash(String str) {
 		if (bypassSecurity) {
 			return str;
@@ -21,7 +25,7 @@ public class StringEncryptorUtil {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-1");
 			md.update(str.getBytes(StandardCharsets.UTF_8));
-			return Base64.encodeBase64String(md.digest());
+			return encodeBase64(md.digest());
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException("StringEncryptorUtil.hash: ", e);
 		}

@@ -2,7 +2,7 @@ package org.devocative.adroit.obuilder;
 
 import java.util.Collection;
 
-class CollectionBuilder<T> {
+public class CollectionBuilder<T> {
 	private Collection<T> collection;
 
 	public CollectionBuilder(Collection<T> collection) {

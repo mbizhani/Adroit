@@ -2,7 +2,7 @@ package org.devocative.adroit.obuilder;
 
 import java.util.Map;
 
-class MapBuilder<K, V> {
+public class MapBuilder<K, V> {
 	private Map<K, V> map;
 
 	public MapBuilder(Map<K, V> map) {

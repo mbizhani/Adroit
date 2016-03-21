@@ -1,5 +1,6 @@
 package org.devocative.adroit;
 
+import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.NamedParameterStatement;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +11,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.util.Arrays;
+import java.util.*;
 
 public class TestAdroit {
 
@@ -93,6 +94,50 @@ public class TestAdroit {
 			Assert.assertTrue(true);
 		}
 
+		Assert.assertEquals(StringEncryptorUtil.encodeBase64(new byte[]{1, 2, 3, 4}), "AQIDBA==");
+
 		//TODO test enc/dec
+	}
+
+	@Test
+	public void testObjectBuilder() {
+		Collection<String> list1 = ObjectBuilder
+			.<String>createDefaultList()
+			.add("A")
+			.add("B")
+			.add("C")
+			.get();
+
+		Collection<String> list2 = ObjectBuilder
+			.createCollection(new LinkedList<String>())
+			.add("A")
+			.add("B")
+			.add("D")
+			.get();
+
+		Assert.assertNotEquals(list1, list2);
+
+		Map<String, Integer> map1 = ObjectBuilder
+			.<String, Integer>createDefaultMap()
+			.put("A", 1)
+			.put("B", 2)
+			.put("C", 33)
+			.get();
+
+		Map<String, Integer> map2 = ObjectBuilder
+			.createMap(new LinkedHashMap<String, Integer>())
+			.put("C", 33)
+			.put("A", 1)
+			.put("B", 2)
+			.get();
+
+		Assert.assertEquals(map1, map2);
+
+		Map<String, Integer> map3 = new HashMap<>();
+		map3.put("B", 2);
+		map3.put("C", 33);
+		map3.put("A", 1);
+
+		Assert.assertEquals(map1, map3);
 	}
 }
