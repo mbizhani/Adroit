@@ -2,6 +2,7 @@ package org.devocative.adroit;
 
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.NamedParameterStatement;
+import org.devocative.adroit.vo.DateFieldVO;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -139,5 +140,60 @@ public class TestAdroit {
 		map3.put("A", 1);
 
 		Assert.assertEquals(map1, map3);
+	}
+
+	@Test
+	public void testCalendar() {
+		List<Thread> threads = new ArrayList<>();
+
+		for (int i = 0; i < 100; i++) {
+
+			Thread t = new Thread() {
+				@Override
+				public void run() {
+					testCalendarInThread();
+				}
+			};
+			threads.add(t);
+			t.start();
+		}
+
+		for (Thread t : threads) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	public void testCalendarInThread() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, 2016);
+		cal.set(Calendar.MONTH, 0);
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		System.out.println("cal.getTime() = " + cal.getTime());
+		//Jan 01 2016
+
+		Date jan_01_2016 = CalendarUtil.getDate(new DateFieldVO(2016, 1, 1));
+		System.out.println("jan_01_2016 = " + jan_01_2016);
+
+		Assert.assertEquals("2016-01-01", CalendarUtil.formatDate(jan_01_2016, "yyyy-MM-dd"));
+
+		Assert.assertEquals(
+			CalendarUtil.formatDate(jan_01_2016, "yyyy-MM-dd"),
+			CalendarUtil.formatDate(cal.getTime(), "yyyy-MM-dd")
+		);
+
+		System.out.println(CalendarUtil.toPersian(cal.getTime(), "yyyy-MM-dd"));
+		Assert.assertEquals("1394-10-11", CalendarUtil.toPersian(cal.getTime(), "yyyy-MM-dd"));
+
+		Date esf_30_1391 = CalendarUtil.toGregorian("1391-12-30", "yyyy-MM-dd");
+		System.out.println("esf_30_1391 = " + esf_30_1391);
+		Assert.assertEquals("2013-03-20", CalendarUtil.formatDate(esf_30_1391, "yyyy-MM-dd"));
+
+		Date aba_15_1394 = CalendarUtil.toGregorian(new DateFieldVO(1394, 8, 15));
+		System.out.println("aba_15_1394 = " + aba_15_1394);
+		Assert.assertEquals("2015-11-06", CalendarUtil.formatDate(aba_15_1394, "yyyy-MM-dd"));
 	}
 }

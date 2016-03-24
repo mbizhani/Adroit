@@ -28,8 +28,12 @@ public class CalendarUtil {
 			;
 	}
 
-	public static Date toGregorian(String persianDate, String pattern) throws ParseException {
-		return new SimpleDateFormat(pattern, fa).parse(persianDate);
+	public static Date toGregorian(String persianDate, String pattern) {
+		try {
+			return new SimpleDateFormat(pattern, fa).parse(persianDate);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static Date toGregorian(DateFieldVO dateField) {
