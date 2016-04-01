@@ -94,6 +94,44 @@ public class ObjectUtil {
 		return result;
 	}
 
+	public static PropertyDescriptor[] getPropertyDescriptors(Class cls, boolean force) {
+		PropertyDescriptor[] result;
+		try {
+			result = PropertyUtils.getPropertyDescriptors(cls);
+		} catch (Exception e) {
+			if (force) {
+				result = new PropertyDescriptor[0];
+			} else {
+				throw new RuntimeException(e);
+			}
+		}
+		return result;
+	}
+
+	public static PropertyDescriptor getPropertyDescriptor(Object bean, String property, boolean force) {
+		PropertyDescriptor result;
+		try {
+			result = PropertyUtils.getPropertyDescriptor(bean, property);
+		} catch (Exception e) {
+			if (force) {
+				result = null;
+			} else {
+				throw new RuntimeException(e);
+			}
+		}
+		return result;
+	}
+
+	public static PropertyDescriptor getPropertyDescriptor(Class cls, String property, boolean force) {
+		PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors(cls, force);
+		for (PropertyDescriptor descriptor : propertyDescriptors) {
+			if (property.equals(descriptor.getName())) {
+				return descriptor;
+			}
+		}
+		return null;
+	}
+
 	public static Object getPropertyValue(Object bean, String property, boolean force) {
 		Object result;
 		try {
