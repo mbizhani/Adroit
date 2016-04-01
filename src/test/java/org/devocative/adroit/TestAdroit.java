@@ -3,6 +3,7 @@ package org.devocative.adroit;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.NamedParameterStatement;
 import org.devocative.adroit.vo.DateFieldVO;
+import org.devocative.adroit.vo.KeyValueVO;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -195,5 +196,70 @@ public class TestAdroit {
 		Date aba_15_1394 = CalendarUtil.toGregorian(new DateFieldVO(1394, 8, 15));
 		System.out.println("aba_15_1394 = " + aba_15_1394);
 		Assert.assertEquals("2015-11-06", CalendarUtil.formatDate(aba_15_1394, "yyyy-MM-dd"));
+	}
+
+	@Test
+	public void testObjectUtil() {
+		KeyValueVO<String, Integer> k1 = new KeyValueVO<>("A", 1);
+		System.out.println("k1 = " + ObjectUtil.toString(k1));
+
+		KeyValueVO<String, Integer> k2 = new KeyValueVO<>("B", null);
+		System.out.println("k2 = " + ObjectUtil.toString(k2));
+
+		Assert.assertNotEquals(k2.getKey(), k1.getKey());
+		Assert.assertNotEquals(k2.getValue(), k1.getValue());
+
+		ObjectUtil.merge(k2, k1, false);
+
+		System.out.println("k2 (merged) = " + ObjectUtil.toString(k2));
+
+		Assert.assertNotEquals(k2.getKey(), k1.getKey());
+		Assert.assertEquals(k2.getValue(), k1.getValue());
+
+		ListHolder l1 = new ListHolder(
+			ObjectUtil.asList(
+				new KeyValueVO<>("A", (Integer) null),
+				new KeyValueVO<>("B", 1),
+				new KeyValueVO<>("D", 2)
+			));
+
+		ListHolder l2 = new ListHolder(
+			ObjectUtil.asList(
+				new KeyValueVO<>("A", 11),
+				new KeyValueVO<>("B", (Integer) null),
+				new KeyValueVO<>("C", 13)
+			));
+
+		ObjectUtil.merge(l2, l1, false);
+
+		Assert.assertEquals(l2.getList().size(), 4);
+
+		Assert.assertEquals(((KeyValueVO) l2.getList().get(0)).getKey(), "A");
+		Assert.assertEquals(((KeyValueVO) l2.getList().get(0)).getValue(), 11);
+
+		Assert.assertEquals(((KeyValueVO) l2.getList().get(1)).getKey(), "B");
+		Assert.assertEquals(((KeyValueVO) l2.getList().get(1)).getValue(), 1);
+
+		Assert.assertEquals(((KeyValueVO) l2.getList().get(2)).getKey(), "C");
+
+		Assert.assertEquals(((KeyValueVO) l2.getList().get(3)).getKey(), "D");
+
+		Assert.assertNull(ObjectUtil.getPropertyValue(k2, "test", true));
+	}
+
+	public static class ListHolder {
+		private List list;
+
+		public ListHolder(List list) {
+			this.list = list;
+		}
+
+		public List getList() {
+			return list;
+		}
+
+		public void setList(List list) {
+			this.list = list;
+		}
 	}
 }
