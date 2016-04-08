@@ -12,6 +12,7 @@ of classpath. The `IConfigKey` interface, used in `ConfigUtil` as config key, is
 apply its literals as config keys.
 - **NamedParameterStatement**: Like Java's prepared statement, except using named parameters instead of `?`
 - **StringEncryptorUtil**: A utility class providing `encryption/decryption`, `encoding/decoding` and `hashing` functions of strings
+- **ObjectUtil**: A utility class providing `bean introspection` and other general operation regarding objects
 
 Some samples are provided in the test class, `TestAdroit`. For testing `NamedParameterStatement`, the sample schema is
 provided in the `test/resources/init_mysql.sql` file for MySQL database.
