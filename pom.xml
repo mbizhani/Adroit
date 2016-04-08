@@ -35,9 +35,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com:mbizhani/Adroit.git</connection>
-		<developerConnection>scm:git:git@github.com:mbizhani/Adroit.git</developerConnection>
-		<url>git@github.com:mbizhani/Adroit.git</url>
+		<connection>scm:git:https://github.com/mbizhani/Adroit.git</connection>
+		<developerConnection>scm:git:https://github.com/mbizhani/Adroit.git</developerConnection>
+		<url>https://github.com/mbizhani/Adroit.git</url>
 		<tag>HEAD</tag>
 	</scm>
 
