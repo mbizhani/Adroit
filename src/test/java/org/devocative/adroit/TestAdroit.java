@@ -245,6 +245,14 @@ public class TestAdroit {
 		Assert.assertEquals(((KeyValueVO) l2.getList().get(3)).getKey(), "D");
 
 		Assert.assertNull(ObjectUtil.getPropertyValue(k2, "test", true));
+
+		Assert.assertFalse(ObjectUtil.hasIt(""));
+		Assert.assertFalse(ObjectUtil.hasIt("  "));
+		Assert.assertTrue(ObjectUtil.hasIt(" a  "));
+
+		Assert.assertTrue(ObjectUtil.isFalse(null));
+		Assert.assertTrue(ObjectUtil.isFalse(false));
+		Assert.assertFalse(ObjectUtil.isTrue(null));
 	}
 
 	public static class ListHolder {

@@ -9,6 +9,8 @@ import java.util.*;
 
 public class ObjectUtil {
 
+	// --------------------- BEAN REFLECTION
+
 	static {
 		PropertyUtils.addBeanIntrospector(new FluentPropertyBeanIntrospector());
 	}
@@ -165,26 +167,6 @@ public class ObjectUtil {
 		return null;
 	}
 
-	public static Object findFirstIn(Object obj, Object[] arr) {
-		for (Object o : arr) {
-			if (obj.equals(o)) {
-				return o;
-			}
-		}
-		return null;
-	}
-
-	public static Object[] append(Object obj, Object[] arr) {
-		Object[] result = new Object[arr.length + 1];
-		int i;
-		for (i = 0; i < arr.length; i++) {
-			result[i] = arr[i];
-		}
-		result[i] = obj;
-
-		return result;
-	}
-
 	public static String toString(Object bean) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("{\n");
@@ -207,10 +189,50 @@ public class ObjectUtil {
 		return builder.toString();
 	}
 
+	// --------------------- LIST/ARRAY UTILITIES
+
+	public static Object findFirstIn(Object obj, Object[] arr) {
+		for (Object o : arr) {
+			if (obj.equals(o)) {
+				return o;
+			}
+		}
+		return null;
+	}
+
+	public static Object[] append(Object obj, Object[] arr) {
+		Object[] result = new Object[arr.length + 1];
+		int i;
+		for (i = 0; i < arr.length; i++) {
+			result[i] = arr[i];
+		}
+		result[i] = obj;
+
+		return result;
+	}
+
 	@SafeVarargs
 	public static <T> List<T> asList(T... objects) {
 		List<T> list = new ArrayList<>();
 		Collections.addAll(list, objects);
 		return list;
+	}
+
+	// --------------------- PRIMITIVE UTILITIES
+
+	public static boolean hasIt(String str) {
+		return str != null && str.trim().length() > 0;
+	}
+
+	public static boolean hasIt(Collection col) {
+		return col != null && col.size() > 0;
+	}
+
+	public static boolean isTrue(Boolean b) {
+		return b != null && b;
+	}
+
+	public static boolean isFalse(Boolean b) {
+		return b == null || !b;
 	}
 }
