@@ -48,7 +48,10 @@ public class TestAdroit {
 			new NamedParameterStatement(sa)
 				.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
 				.setParameter("edu", Arrays.asList(1, 2, 3))
-				.setParameter("name", "Jo%");
+				.setParameter("name", "Jo%")
+				.setPageIndex(1L)
+				.setPageSize(10L);
+
 		int no = 0;
 		ResultSet rs = nps.executeQuery();
 		while (rs.next()) {

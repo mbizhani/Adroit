@@ -35,6 +35,11 @@ public class NamedParameterStatement {
 	private long totalBatchCount = 0, batchCount = 0;
 	private Integer fetchSize, queryTimeout, maxRows;
 
+	private Long pageIndex, pageSize;
+	private EDatabaseType databaseType;
+
+	// ------------------------------ CONSTRUCTORS
+
 	public NamedParameterStatement(Connection connection) {
 		this(connection, null, null);
 	}
@@ -49,6 +54,8 @@ public class NamedParameterStatement {
 		this.query = query;
 		this.schema = schema;
 	}
+
+	// ------------------------------ UTIL METHODS
 
 	public static String applySchema(String schema, String query) {
 		StringBuffer builder = new StringBuffer();
@@ -66,7 +73,7 @@ public class NamedParameterStatement {
 		return builder.toString();
 	}
 
-	// ------------------- setters & getters -------------------
+	// ------------------------------ ACCESSORS
 
 	public String getQuery() {
 		return query;
@@ -157,9 +164,25 @@ public class NamedParameterStatement {
 		return connection;
 	}
 
-	// ------------------- Methods -------------------
+	public NamedParameterStatement setPageIndex(Long pageIndex) {
+		this.pageIndex = pageIndex;
+		return this;
+	}
+
+	public NamedParameterStatement setPageSize(Long pageSize) {
+		this.pageSize = pageSize;
+		return this;
+	}
+
+	public NamedParameterStatement setDatabaseType(EDatabaseType databaseType) {
+		this.databaseType = databaseType;
+		return this;
+	}
+
+	// ------------------------------ PUBLIC METHODS
 
 	public ResultSet executeQuery() throws SQLException {
+		applyPagination();
 		processQuery();
 		applyAllParams();
 		return preparedStatement.executeQuery();
@@ -203,6 +226,8 @@ public class NamedParameterStatement {
 		processQuery();
 		preparedStatement.close();
 	}
+
+	// ------------------------------ PRIVATE METHODS
 
 	private void processQuery() throws SQLException {
 		if (preparedStatement != null) {
@@ -335,4 +360,55 @@ public class NamedParameterStatement {
 		preparedStatement.setObject(index, val);
 	}
 
+	private void applyPagination() {
+		if (preparedStatement != null || (pageIndex == null && pageSize == null)) {
+			return;
+		}
+
+		if (query == null) {
+			throw new RuntimeException("Invalid NamedParameterStatement: no query!");
+		}
+
+		switch (findDatabaseType()) {
+
+			case Oracle: // oracle records index starts from 1
+				query = String.format(
+					"select * from (select rownum rnum_pg, a.* from ( %s ) a) where rnum_pg between :pg_first and :pg_last",
+					query);
+				params.put("pg_first", (pageIndex - 1) * pageSize + 1);
+				params.put("pg_last", pageIndex * pageSize);
+				break;
+
+			case MySql: // mysql records index starts from 0
+				query = String.format("%s limit :pg_first,:pg_size", query);
+				params.put("pg_first", (pageIndex - 1) * pageSize);
+				params.put("pg_size", pageSize);
+				break;
+
+			case Unknown:
+				logger.error("Unknown database type for pagination");
+				break;
+		}
+	}
+
+	private EDatabaseType findDatabaseType() {
+		if (databaseType != null) {
+			return databaseType;
+		}
+
+		EDatabaseType result = EDatabaseType.Unknown;
+		try {
+			String driverName = connection.getMetaData().getDriverName().toLowerCase();
+			String url = connection.getMetaData().getURL().toLowerCase();
+			for (EDatabaseType type : EDatabaseType.values()) {
+				if (driverName.contains(type.getDriverHint()) || url.contains(type.getUrlHint())) {
+					result = type;
+					break;
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+		return result;
+	}
 }
