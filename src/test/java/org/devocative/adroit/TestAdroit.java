@@ -291,7 +291,7 @@ public class TestAdroit {
 
 	// ------------------------------
 
-	private static class ListHolder {
+	public static class ListHolder {
 		private List list;
 
 		public ListHolder(List list) {
