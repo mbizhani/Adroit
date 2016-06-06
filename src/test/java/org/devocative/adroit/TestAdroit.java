@@ -1,5 +1,6 @@
 package org.devocative.adroit;
 
+import org.devocative.adroit.cache.LRUCache;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.NamedParameterStatement;
 import org.devocative.adroit.vo.DateFieldVO;
@@ -258,7 +259,39 @@ public class TestAdroit {
 		Assert.assertFalse(ObjectUtil.isTrue(null));
 	}
 
-	public static class ListHolder {
+	@Test
+	public void testLRUCache() {
+		LRUCache<String, Integer> cache = new LRUCache<>(3);
+
+		cache.put("A", 1); // A
+		cache.put("B", 2); // A B
+		cache.put("C", 3); // A B C
+		cache.put("D", 4); // B C D
+
+		Assert.assertTrue(cache.size() == 3);
+		Assert.assertFalse(cache.containsKey("A"));
+
+		cache.put("B", 5); // C D B
+		cache.put("E", 6); // D B E
+
+		Assert.assertTrue(cache.get("B") == 5); // D E B
+		Assert.assertFalse(cache.containsKey("C"));
+
+		Assert.assertTrue(cache.get("D") == 4); // E B D
+		cache.put("F", 7); // B D F
+		Assert.assertFalse(cache.containsKey("E"));
+
+		cache.get("B"); // D F B
+		cache.put("G", 8); // F B G
+		Assert.assertFalse(cache.containsKey("D"));
+
+		cache.remove("B");
+		Assert.assertTrue(cache.size() == 2);
+	}
+
+	// ------------------------------
+
+	private static class ListHolder {
 		private List list;
 
 		public ListHolder(List list) {
