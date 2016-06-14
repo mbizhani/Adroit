@@ -26,19 +26,27 @@ public class LRUCache<K, V> {
 
 	// ------------------------------
 
-	public void put(K key, V value) {
+	public synchronized void put(K key, V value) {
 		map.put(key, value);
 	}
 
-	public V get(K key) {
-		if (missedHitHandler != null && !map.containsKey(key)) {
-			map.put(key, missedHitHandler.load(key));
+	public synchronized void update(K key, V value) {
+		if (map.containsKey(key)) {
+			map.put(key, value);
 		}
-		return map.get(key);
 	}
 
-	public V remove(K key) {
+	public synchronized V remove(K key) {
 		return map.remove(key);
+	}
+
+	// ---------------
+
+	public V get(K key) {
+		if (missedHitHandler != null && !map.containsKey(key)) {
+			map.put(key, missedHitHandler.loadForCache(key));
+		}
+		return map.get(key);
 	}
 
 	public int size() {
