@@ -21,6 +21,15 @@ public class NamedParameterStatement {
 		KEYWORDS.add("dual");
 	}
 
+	/*
+	Pattern to find parameters in the sql;
+		(['].*?[']) try to ignore characters between two quote
+		[:]([\w\d_]+) try to find parameter without :
+	*/
+	private static final String PARAM_PATTERN = "(['].*?['])|[:]([\\w\\d_]+)";
+
+	// ------------------------------
+
 	private Map<String, List<Integer>> paramsPlacement = new HashMap<>();
 	private Map<String, Object> params = new HashMap<>();
 
@@ -71,6 +80,21 @@ public class NamedParameterStatement {
 		}
 		matcher.appendTail(builder);
 		return builder.toString();
+	}
+
+	public static List<String> findParamsInQuery(String query) {
+		List<String> result = new ArrayList<>();
+
+		Pattern p = Pattern.compile(PARAM_PATTERN);
+		Matcher matcher = p.matcher(query);
+
+		while (matcher.find()) {
+			if (matcher.group(1) == null) {
+				result.add(matcher.group(2).toLowerCase());
+			}
+		}
+
+		return result;
 	}
 
 	// ------------------------------ ACCESSORS
@@ -241,10 +265,7 @@ public class NamedParameterStatement {
 		logger.debug("Orig Query: {}", query);
 		StringBuffer builder = new StringBuffer();
 
-		// Pattern to find parameters in the sql;
-		//    (['].*?[']) try to ignore characters between two quote
-		//    [:]([\w\d_]+) try to find parameter without :
-		Pattern p = Pattern.compile("(['].*?['])|[:]([\\w\\d_]+)");
+		Pattern p = Pattern.compile(PARAM_PATTERN);
 		Matcher matcher = p.matcher(query);
 		int noOfParams = 0;
 		while (matcher.find()) {

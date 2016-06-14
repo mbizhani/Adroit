@@ -64,6 +64,14 @@ public class TestAdroit {
 	}
 
 	@Test
+	public void testParamOfNPS() {
+		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' from dual where 1=:one and 2<>:two");
+		Assert.assertEquals(2, paramsInQuery.size());
+		Assert.assertEquals("one", paramsInQuery.get(0));
+		Assert.assertEquals("two", paramsInQuery.get(1));
+	}
+
+	@Test
 	public void testConfigUtil() {
 		Assert.assertEquals(123L, ConfigUtil.getInteger(true, "int.key").longValue());
 
