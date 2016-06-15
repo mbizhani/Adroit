@@ -17,6 +17,10 @@ public class StringEncryptorUtil {
 		return Base64.encodeBase64String(b);
 	}
 
+	public static String decodeBase64(String str) {
+		return new String(Base64.decodeBase64(str), StandardCharsets.UTF_8);
+	}
+
 	public static String hash(String str) {
 		if (bypassSecurity) {
 			return str;
