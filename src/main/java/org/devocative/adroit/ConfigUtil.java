@@ -26,7 +26,7 @@ public class ConfigUtil {
 		}
 	}
 
-	// ******************* String
+	// ------------------------------ String
 
 	public static String getString(boolean validate, String key) {
 		String value = PROPERTIES.getProperty(key);
@@ -59,12 +59,16 @@ public class ConfigUtil {
 	}
 
 	public static String getString(IConfigKey configKey) {
-		return configKey.getValidate() ?
+		String val = configKey.getValidate() ?
 			getString(true, configKey.getKey()) :
 			getString(configKey.getKey(), (String) configKey.getDefaultValue());
+
+		checkValueInPossibilities(val, configKey);
+
+		return val;
 	}
 
-	// ******************* Boolean
+	// ------------------------------ Boolean
 
 	public static Boolean getBoolean(boolean validate, String key) {
 		return Boolean.valueOf(getString(validate, key));
@@ -79,12 +83,16 @@ public class ConfigUtil {
 	}
 
 	public static Boolean getBoolean(IConfigKey configKey) {
-		return configKey.getValidate() ?
+		Boolean val = configKey.getValidate() ?
 			getBoolean(true, configKey.getKey()) :
 			getBoolean(configKey.getKey(), (Boolean) configKey.getDefaultValue());
+
+		checkValueInPossibilities(val, configKey);
+
+		return val;
 	}
 
-	// ******************* Integer
+	// ------------------------------ Integer
 
 	public static Integer getInteger(boolean validate, String key) {
 		return Integer.valueOf(getString(validate, key));
@@ -99,12 +107,16 @@ public class ConfigUtil {
 	}
 
 	public static Integer getInteger(IConfigKey configKey) {
-		return configKey.getValidate() ?
+		Integer val = configKey.getValidate() ?
 			getInteger(true, configKey.getKey()) :
 			getInteger(configKey.getKey(), (Integer) configKey.getDefaultValue());
+
+		checkValueInPossibilities(val, configKey);
+
+		return val;
 	}
 
-	// ******************* Long
+	// ------------------------------ Long
 
 	public static Long getLong(boolean validate, String key) {
 		return Long.valueOf(getString(validate, key));
@@ -119,12 +131,16 @@ public class ConfigUtil {
 	}
 
 	public static Long getLong(IConfigKey configKey) {
-		return configKey.getValidate() ?
+		Long val = configKey.getValidate() ?
 			getLong(true, configKey.getKey()) :
 			getLong(configKey.getKey(), (Long) configKey.getDefaultValue());
+
+		checkValueInPossibilities(val, configKey);
+
+		return val;
 	}
 
-	// ******************* List<String>
+	// ------------------------------ List<String>
 
 	public static List<String> getList(boolean validate, String key) {
 		String value = getString(validate, key);
@@ -163,7 +179,7 @@ public class ConfigUtil {
 			getList(configKey.getKey(), (List<String>) configKey.getDefaultValue());
 	}
 
-	// ******************* Other Methods
+	// ------------------------------ Other Methods
 
 	public static void updateProperty(String key, String value) {
 		if (PROPERTIES.containsKey(key + ENC_SUFFIX)) {
@@ -243,4 +259,12 @@ public class ConfigUtil {
 		}
 	}
 
+	// ------------------------------ PRIVATE
+
+	private static void checkValueInPossibilities(Object val, IConfigKey configKey) {
+		if (val != null && configKey.getPossibleValues() != null && !configKey.getPossibleValues().contains(val)) {
+			throw new RuntimeException(String.format("Invalid value for key=[%s], possibles=%s",
+				configKey.getKey(), configKey.getPossibleValues()));
+		}
+	}
 }
