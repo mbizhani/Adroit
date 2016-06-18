@@ -394,7 +394,7 @@ public class NamedParameterStatement {
 
 			case Oracle: // oracle records index starts from 1
 				query = String.format(
-					"select * from (select rownum rnum_pg, a.* from ( %s ) a) where rnum_pg between :pg_first and :pg_last",
+					"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg between :pg_first and :pg_last",
 					query);
 				params.put("pg_first", (pageIndex - 1) * pageSize + 1);
 				params.put("pg_last", pageIndex * pageSize);
