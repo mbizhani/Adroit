@@ -6,6 +6,7 @@ import java.util.*;
 public class ConfigUtil {
 	private static final String ENC_SUFFIX = ".ENC";
 	private static final Properties PROPERTIES = new Properties();
+	private static final List<IConfigKey> CONFIG_KEYS = new ArrayList<>();
 
 	static {
 		load(ConfigUtil.class.getResourceAsStream("/config.properties"));
@@ -182,12 +183,12 @@ public class ConfigUtil {
 	// ------------------------------ Other Methods
 
 	public static void updateProperty(String key, String value) {
-		if (PROPERTIES.containsKey(key + ENC_SUFFIX)) {
-			PROPERTIES.setProperty(key + ENC_SUFFIX, StringEncryptorUtil.encrypt(value));
-		} else if (PROPERTIES.containsKey(key)) {
-			PROPERTIES.setProperty(key, value);
-		} else {
-			throw new RuntimeException("Property not found: " + key);
+		if (value != null) {
+			if (PROPERTIES.containsKey(key + ENC_SUFFIX)) {
+				PROPERTIES.setProperty(key + ENC_SUFFIX, StringEncryptorUtil.encrypt(value));
+			} else {
+				PROPERTIES.setProperty(key, value);
+			}
 		}
 	}
 
@@ -257,6 +258,18 @@ public class ConfigUtil {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static void add(IConfigKey key) {
+		CONFIG_KEYS.add(key);
+	}
+
+	public static List<IConfigKey> getConfigKeys() {
+		return CONFIG_KEYS;
+	}
+
+	public static boolean isEncrypted(String key) {
+		return PROPERTIES.containsKey(key + ENC_SUFFIX);
 	}
 
 	// ------------------------------ PRIVATE
