@@ -102,6 +102,10 @@ public class TestAdroit {
 		} catch (Exception e) {
 			Assert.assertEquals("Invalid value for key=[test.choices], possibles=[ok, nok]", e.getMessage());
 		}
+
+		Assert.assertTrue(ConfigUtil.hasKey(TestConfigKey.NOK));
+		Assert.assertTrue(ConfigUtil.hasKey("empty.list.key"));
+		Assert.assertFalse(ConfigUtil.hasKey("my.key"));
 	}
 
 	@Test

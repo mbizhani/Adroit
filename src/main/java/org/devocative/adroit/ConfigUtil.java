@@ -182,7 +182,7 @@ public class ConfigUtil {
 
 	// ------------------------------ Other Methods
 
-	public static void updateProperty(String key, String value) {
+	public static void updateKey(String key, String value) {
 		if (value != null) {
 			if (PROPERTIES.containsKey(key + ENC_SUFFIX)) {
 				PROPERTIES.setProperty(key + ENC_SUFFIX, StringEncryptorUtil.encrypt(value));
@@ -192,7 +192,7 @@ public class ConfigUtil {
 		}
 	}
 
-	public static void addProperty(String key, String value, boolean doEncrypt) {
+	public static void addKey(String key, String value, boolean doEncrypt) {
 		if (doEncrypt) {
 			if (PROPERTIES.containsKey(key + ENC_SUFFIX)) {
 				throw new RuntimeException("Property already exists: " + key);
@@ -208,6 +208,14 @@ public class ConfigUtil {
 
 	public static void removeKey(String key) {
 		PROPERTIES.remove(key);
+	}
+
+	public static boolean hasKey(String key) {
+		return PROPERTIES.containsKey(key);
+	}
+
+	public static boolean hasKey(IConfigKey configKey) {
+		return PROPERTIES.containsKey(configKey.getKey());
 	}
 
 	public static void write() {
