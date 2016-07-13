@@ -1,8 +1,8 @@
 package org.devocative.adroit.cache;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.devocative.adroit.ObjectUtil;
+
+import java.util.*;
 
 public class LRUCache<K, V> {
 	private int cacheSize;
@@ -55,6 +55,28 @@ public class LRUCache<K, V> {
 
 	public boolean containsKey(K key) {
 		return map.containsKey(key);
+	}
+
+	public Set<K> keys() {
+		return map.keySet();
+	}
+
+	public List<V> values() {
+		return new ArrayList<>(map.values());
+	}
+
+	public Set<Map.Entry<K, V>> entries() {
+		return map.entrySet();
+	}
+
+	public V findByProperty(String property, Object value) {
+		for (V v : map.values()) {
+			Object propertyValue = ObjectUtil.getPropertyValue(v, property, true);
+			if (propertyValue != null && propertyValue.equals(value)) {
+				return v;
+			}
+		}
+		return null;
 	}
 
 	// ------------------------------
