@@ -5,15 +5,16 @@ import org.devocative.adroit.ObjectUtil;
 import java.util.*;
 
 public class LRUCache<K, V> implements ICache<K, V> {
-	private final int cacheSize;
+	private int capacity;
+	private long missHitCount;
 	private final Map<K, V> map;
 
 	private IMissedHitHandler<K, V> missedHitHandler;
 
 	// ------------------------------
 
-	public LRUCache(int cacheSize) {
-		this.cacheSize = cacheSize;
+	public LRUCache(int capacity) {
+		this.capacity = capacity;
 
 		map = Collections.synchronizedMap(new CacheMap());
 	}
@@ -21,15 +22,52 @@ public class LRUCache<K, V> implements ICache<K, V> {
 	// ------------------------------
 
 	@Override
-	public LRUCache setMissedHitHandler(IMissedHitHandler<K, V> missedHitHandler) {
+	public int getCapacity() {
+		return capacity;
+	}
+
+	@Override
+	public void setCapacity(int capacity) {
+		this.capacity = capacity;
+	}
+
+	@Override
+	public long getMissHitCount() {
+		return missHitCount;
+	}
+
+	@Override
+	public int getSize() {
+		return map.size();
+	}
+
+	@Override
+	public Set<K> getKeys() {
+		return Collections.unmodifiableSet(map.keySet());
+	}
+
+	@Override
+	public Collection<V> getValues() {
+		return Collections.unmodifiableCollection(map.values());
+	}
+
+	@Override
+	public Set<Map.Entry<K, V>> getEntries() {
+		return Collections.unmodifiableSet(map.entrySet());
+	}
+
+	@Override
+	public void setMissedHitHandler(IMissedHitHandler<K, V> missedHitHandler) {
 		this.missedHitHandler = missedHitHandler;
-		return this;
 	}
 
 	// ------------------------------
 
 	@Override
 	public void put(K key, V value) {
+		if (!map.containsKey(key) && map.size() >= capacity) {
+			missHitCount++;
+		}
 		map.put(key, value);
 	}
 
@@ -45,39 +83,24 @@ public class LRUCache<K, V> implements ICache<K, V> {
 		return map.remove(key);
 	}
 
+	@Override
+	public void clear() {
+		map.clear();
+		missHitCount = 0;
+	}
+
 	// ---------------
 
 	@Override
 	public synchronized V get(K key) {
-		if (missedHitHandler != null && !map.containsKey(key)) {
-			map.put(key, missedHitHandler.loadForCache(key));
-		}
+		callMissedHitHandler(key);
 		return map.get(key);
 	}
 
 	@Override
-	public int size() {
-		return map.size();
-	}
-
-	@Override
 	public boolean containsKey(K key) {
+		callMissedHitHandler(key);
 		return map.containsKey(key);
-	}
-
-	@Override
-	public Set<K> keys() {
-		return Collections.unmodifiableSet(map.keySet());
-	}
-
-	@Override
-	public Collection<V> values() {
-		return Collections.unmodifiableCollection(map.values());
-	}
-
-	@Override
-	public Set<Map.Entry<K, V>> entries() {
-		return Collections.unmodifiableSet(map.entrySet());
 	}
 
 	@Override
@@ -91,21 +114,27 @@ public class LRUCache<K, V> implements ICache<K, V> {
 		return null;
 	}
 
-	@Override
-	public void clear() {
-		map.clear();
+	// ------------------------------
+
+	private void callMissedHitHandler(K key) {
+		if (missedHitHandler != null && !map.containsKey(key)) {
+			V v = missedHitHandler.loadForCache(key);
+			if (v != null) {
+				put(key, v);
+			}
+		}
 	}
 
 	// ------------------------------
 
 	private class CacheMap extends LinkedHashMap<K, V> {
 		public CacheMap() {
-			super(cacheSize, 0.75f, true);
+			super(capacity, 0.75f, true);
 		}
 
 		@Override
 		protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-			return size() > cacheSize;
+			return size() > capacity;
 		}
 	}
 }

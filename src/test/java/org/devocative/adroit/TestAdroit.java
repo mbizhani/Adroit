@@ -284,21 +284,25 @@ public class TestAdroit {
 	public void testLRUCache() {
 		LRUCache<String, Integer> cache = new LRUCache<>(3);
 
+		Assert.assertEquals(0, cache.getSize());
+
 		cache.put("A", 1); // A
 		cache.put("B", 2); // A B
 		cache.put("C", 3); // A B C
 		cache.put("D", 4); // B C D
 
-		Assert.assertTrue(cache.size() == 3);
+		Assert.assertEquals(3, cache.getSize());
 		Assert.assertFalse(cache.containsKey("A"));
+		Assert.assertEquals(1, cache.getMissHitCount());
 
 		cache.put("B", 5); // C D B
 		cache.put("E", 6); // D B E
 
-		Assert.assertTrue(cache.get("B") == 5); // D E B
+		Assert.assertEquals(5, (int) cache.get("B")); // D E B
 		Assert.assertFalse(cache.containsKey("C"));
+		Assert.assertEquals(2, cache.getMissHitCount());
 
-		Assert.assertTrue(cache.get("D") == 4); // E B D
+		Assert.assertEquals(4, (int) cache.get("D")); // E B D
 		cache.put("F", 7); // B D F
 		Assert.assertFalse(cache.containsKey("E"));
 
@@ -307,7 +311,18 @@ public class TestAdroit {
 		Assert.assertFalse(cache.containsKey("D"));
 
 		cache.remove("B");
-		Assert.assertTrue(cache.size() == 2);
+		Assert.assertEquals(2, cache.getSize());
+
+		cache.setCapacity(4);
+
+		cache.put("Z", 11);
+		Assert.assertEquals(3, cache.getSize());
+
+		cache.put("Y", 12);
+		Assert.assertEquals(4, cache.getSize());
+
+		cache.clear();
+		Assert.assertEquals(0, cache.getSize());
 	}
 
 	// ------------------------------

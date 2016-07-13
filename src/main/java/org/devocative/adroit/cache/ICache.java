@@ -5,7 +5,21 @@ import java.util.Map;
 import java.util.Set;
 
 public interface ICache<K, V> {
-	LRUCache setMissedHitHandler(IMissedHitHandler<K, V> missedHitHandler);
+	int getCapacity();
+
+	void setCapacity(int capacity);
+
+	long getMissHitCount();
+
+	int getSize();
+
+	Set<K> getKeys();
+
+	Collection<V> getValues();
+
+	Set<Map.Entry<K, V>> getEntries();
+
+	void setMissedHitHandler(IMissedHitHandler<K, V> missedHitHandler);
 
 	void put(K key, V value);
 
@@ -13,19 +27,11 @@ public interface ICache<K, V> {
 
 	V remove(K key);
 
-	V get(K key);
+	void clear();
 
-	int size();
+	V get(K key);
 
 	boolean containsKey(K key);
 
-	Set<K> keys();
-
-	Collection<V> values();
-
-	Set<Map.Entry<K, V>> entries();
-
 	V findByProperty(String property, Object value);
-
-	void clear();
 }
