@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class StringEncryptorUtil {
+public final class StringEncryptorUtil {
 	private static boolean bypassSecurity = false;
 
 	public static void setBypassSecurity(boolean bypassSecurity) {

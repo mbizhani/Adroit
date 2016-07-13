@@ -3,7 +3,7 @@ package org.devocative.adroit;
 import java.io.*;
 import java.util.*;
 
-public class ConfigUtil {
+public final class ConfigUtil {
 	private static final String ENC_SUFFIX = ".ENC";
 	private static final Properties PROPERTIES = new Properties();
 	private static final List<IConfigKey> CONFIG_KEYS = new ArrayList<>();

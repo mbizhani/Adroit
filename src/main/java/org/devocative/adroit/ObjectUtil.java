@@ -7,7 +7,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import java.beans.PropertyDescriptor;
 import java.util.*;
 
-public class ObjectUtil {
+public final class ObjectUtil {
 
 	// --------------------- BEAN REFLECTION
 

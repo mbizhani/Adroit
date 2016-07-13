@@ -8,7 +8,7 @@ import org.devocative.adroit.vo.DateFieldVO;
 import java.text.ParseException;
 import java.util.Date;
 
-public class CalendarUtil {
+public final class CalendarUtil {
 	private static final ULocale fa = new ULocale("en_US@calendar=persian");
 
 	public static String toPersian(Date dt, String pattern) {

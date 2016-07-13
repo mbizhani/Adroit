@@ -4,9 +4,10 @@ import org.devocative.adroit.ObjectUtil;
 
 import java.util.*;
 
-public class LRUCache<K, V> {
-	private int cacheSize;
-	private Map<K, V> map;
+public class LRUCache<K, V> implements ICache<K, V> {
+	private final int cacheSize;
+	private final Map<K, V> map;
+
 	private IMissedHitHandler<K, V> missedHitHandler;
 
 	// ------------------------------
@@ -19,6 +20,7 @@ public class LRUCache<K, V> {
 
 	// ------------------------------
 
+	@Override
 	public LRUCache setMissedHitHandler(IMissedHitHandler<K, V> missedHitHandler) {
 		this.missedHitHandler = missedHitHandler;
 		return this;
@@ -26,49 +28,59 @@ public class LRUCache<K, V> {
 
 	// ------------------------------
 
-	public synchronized void put(K key, V value) {
+	@Override
+	public void put(K key, V value) {
 		map.put(key, value);
 	}
 
+	@Override
 	public synchronized void update(K key, V value) {
 		if (map.containsKey(key)) {
 			map.put(key, value);
 		}
 	}
 
-	public synchronized V remove(K key) {
+	@Override
+	public V remove(K key) {
 		return map.remove(key);
 	}
 
 	// ---------------
 
-	public V get(K key) {
+	@Override
+	public synchronized V get(K key) {
 		if (missedHitHandler != null && !map.containsKey(key)) {
 			map.put(key, missedHitHandler.loadForCache(key));
 		}
 		return map.get(key);
 	}
 
+	@Override
 	public int size() {
 		return map.size();
 	}
 
+	@Override
 	public boolean containsKey(K key) {
 		return map.containsKey(key);
 	}
 
+	@Override
 	public Set<K> keys() {
-		return map.keySet();
+		return Collections.unmodifiableSet(map.keySet());
 	}
 
-	public List<V> values() {
-		return new ArrayList<>(map.values());
+	@Override
+	public Collection<V> values() {
+		return Collections.unmodifiableCollection(map.values());
 	}
 
+	@Override
 	public Set<Map.Entry<K, V>> entries() {
-		return map.entrySet();
+		return Collections.unmodifiableSet(map.entrySet());
 	}
 
+	@Override
 	public V findByProperty(String property, Object value) {
 		for (V v : map.values()) {
 			Object propertyValue = ObjectUtil.getPropertyValue(v, property, true);
@@ -77,6 +89,11 @@ public class LRUCache<K, V> {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public void clear() {
+		map.clear();
 	}
 
 	// ------------------------------
