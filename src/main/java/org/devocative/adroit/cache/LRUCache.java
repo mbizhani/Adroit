@@ -99,6 +99,11 @@ public class LRUCache<K, V> implements ICache<K, V> {
 
 	@Override
 	public boolean containsKey(K key) {
+		return map.containsKey(key);
+	}
+
+	@Override
+	public boolean containsKeyOrFetch(K key) {
 		callMissedHitHandler(key);
 		return map.containsKey(key);
 	}
@@ -111,6 +116,7 @@ public class LRUCache<K, V> implements ICache<K, V> {
 				return v;
 			}
 		}
+		missHitCount++;
 		return null;
 	}
 

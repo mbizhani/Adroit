@@ -33,5 +33,7 @@ public interface ICache<K, V> {
 
 	boolean containsKey(K key);
 
+	boolean containsKeyOrFetch(K key);
+
 	V findByProperty(String property, Object value);
 }
