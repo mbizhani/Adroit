@@ -34,6 +34,7 @@ public class NamedParameterStatement {
 	private Map<String, Object> params = new HashMap<>();
 
 	private boolean hasBatch = false;
+	private boolean ignoreExtraPassedParam = false;
 	private Class<? extends Date> dateClassReplacement;
 	private String query, finalQuery, schema, id;
 
@@ -203,6 +204,11 @@ public class NamedParameterStatement {
 		return this;
 	}
 
+	public NamedParameterStatement setIgnoreExtraPassedParam(boolean ignoreExtraPassedParam) {
+		this.ignoreExtraPassedParam = ignoreExtraPassedParam;
+		return this;
+	}
+
 	// ------------------------------ PUBLIC METHODS
 
 	public ResultSet executeQuery() throws SQLException {
@@ -301,9 +307,11 @@ public class NamedParameterStatement {
 		logger.debug("Final SQL: {}", finalQuery);
 		logger.debug("Number of params: {}", noOfParams);
 
-		for (String param : params.keySet()) {
-			if (!paramsPlacement.containsKey(param)) {
-				throw new SQLException("Parameter not found: " + param);
+		if (!ignoreExtraPassedParam) {
+			for (String param : params.keySet()) {
+				if (!paramsPlacement.containsKey(param)) {
+					throw new SQLException("Passed parameter not found: " + param);
+				}
 			}
 		}
 
@@ -335,12 +343,18 @@ public class NamedParameterStatement {
 		}
 
 		TreeMap<Integer, Object> paramsByPlace = new TreeMap<>();
-		for (Map.Entry<String, Object> paramsEntry : params.entrySet()) {
+		for (Map.Entry<String, List<Integer>> entry : paramsPlacement.entrySet()) {
+			for (Integer position : entry.getValue()) {
+				paramsByPlace.put(position, params.get(entry.getKey()));
+			}
+		}
+
+		/*for (Map.Entry<String, Object> paramsEntry : params.entrySet()) {
 			List<Integer> positions = paramsPlacement.get(paramsEntry.getKey());
 			for (Integer position : positions) {
 				paramsByPlace.put(position, paramsEntry.getValue());
 			}
-		}
+		}*/
 
 		int paramIndex = 1;
 
