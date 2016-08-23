@@ -3,6 +3,8 @@ package org.devocative.adroit.vo;
 import java.io.Serializable;
 
 public class RangeVO<T extends Serializable> implements Serializable {
+	private static final long serialVersionUID = -1354461856855559223L;
+
 	private T lower;
 	private T upper;
 

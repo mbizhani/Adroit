@@ -3,6 +3,8 @@ package org.devocative.adroit.vo;
 import java.io.Serializable;
 
 public class DateFieldVO implements Serializable {
+	private static final long serialVersionUID = -3421038624924188837L;
+
 	private int year;
 	private int month;
 	private int day;

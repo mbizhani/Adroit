@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 public class KeyValueVO<K extends Serializable, V extends Serializable> implements Serializable {
+	private static final long serialVersionUID = 718387772269393769L;
+
 	private K key;
 	private V value;
 
