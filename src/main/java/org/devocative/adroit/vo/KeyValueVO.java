@@ -62,7 +62,7 @@ public class KeyValueVO<K extends Serializable, V extends Serializable> implemen
 	public static <K extends Serializable, V extends Serializable> List<KeyValueVO<K, V>> fromMap(Map<K, V> map) {
 		List<KeyValueVO<K, V>> list = new ArrayList<>(map.size());
 		for (Map.Entry<K, V> entry : map.entrySet()) {
-			list.add(new KeyValueVO<K, V>(entry.getKey(), entry.getValue()));
+			list.add(new KeyValueVO<>(entry.getKey(), entry.getValue()));
 		}
 		return list;
 	}

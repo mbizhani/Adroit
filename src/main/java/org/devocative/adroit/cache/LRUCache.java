@@ -134,6 +134,8 @@ public class LRUCache<K, V> implements ICache<K, V> {
 	// ------------------------------
 
 	private class CacheMap extends LinkedHashMap<K, V> {
+		private static final long serialVersionUID = -3979783834148388956L;
+
 		public CacheMap() {
 			super(capacity, 0.75f, true);
 		}

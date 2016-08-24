@@ -228,8 +228,8 @@ public final class ConfigUtil {
 
 	public static void write(File file) {
 		String line;
-		List<String> lines = new ArrayList<String>();
-		Set<String> notVisitedKeys = new HashSet<String>(PROPERTIES.stringPropertyNames());
+		List<String> lines = new ArrayList<>();
+		Set<String> notVisitedKeys = new HashSet<>(PROPERTIES.stringPropertyNames());
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			while ((line = reader.readLine()) != null) {

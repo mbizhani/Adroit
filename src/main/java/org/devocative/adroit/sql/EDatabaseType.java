@@ -5,7 +5,6 @@ enum EDatabaseType {
 	Oracle("oracledriver", "jdbc:oracle"),
 	MySql("mysql", "jdbc:mysql"),
 	Unknown("-", "-");
-	;
 
 	private String driverHint;
 	private String urlHint;
