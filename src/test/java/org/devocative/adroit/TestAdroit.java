@@ -65,9 +65,10 @@ public class TestAdroit {
 
 	@Test
 	public void testParamOfNPS() {
-		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' from dual where 1=:one and 2<>:two");
+		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' from dual where 1=:One and 2<>:two", false);
 		Assert.assertEquals(2, paramsInQuery.size());
-		Assert.assertEquals("one", paramsInQuery.get(0));
+		Assert.assertNotEquals("one", paramsInQuery.get(0));
+		Assert.assertEquals("One", paramsInQuery.get(0));
 		Assert.assertEquals("two", paramsInQuery.get(1));
 	}
 

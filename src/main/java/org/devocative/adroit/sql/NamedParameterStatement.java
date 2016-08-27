@@ -83,7 +83,7 @@ public class NamedParameterStatement {
 		return builder.toString();
 	}
 
-	public static List<String> findParamsInQuery(String query) {
+	public static List<String> findParamsInQuery(String query, boolean changeToLower) {
 		List<String> result = new ArrayList<>();
 
 		Pattern p = Pattern.compile(PARAM_PATTERN);
@@ -91,7 +91,11 @@ public class NamedParameterStatement {
 
 		while (matcher.find()) {
 			if (matcher.group(1) == null) {
-				result.add(matcher.group(2).toLowerCase());
+				if (changeToLower) {
+					result.add(matcher.group(2).toLowerCase());
+				} else {
+					result.add(matcher.group(2));
+				}
 			}
 		}
 
