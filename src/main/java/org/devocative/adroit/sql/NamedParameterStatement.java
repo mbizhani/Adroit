@@ -91,10 +91,15 @@ public class NamedParameterStatement {
 
 		while (matcher.find()) {
 			if (matcher.group(1) == null) {
+				String param;
 				if (changeToLower) {
-					result.add(matcher.group(2).toLowerCase());
+					param = matcher.group(2).toLowerCase();
 				} else {
-					result.add(matcher.group(2));
+					param = matcher.group(2);
+				}
+
+				if (!result.contains(param)) {
+					result.add(param);
 				}
 			}
 		}
