@@ -60,6 +60,12 @@ public class TestAdroit {
 			no++;
 		}
 
+		System.out.println(nps.getFinalIndexedQuery());
+		System.out.println(nps.getFinalParams());
+
+		Assert.assertEquals("select * from t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7  limit  ?8 , ?9 ", nps.getFinalIndexedQuery());
+		Assert.assertEquals("Jo%", nps.getFinalParams().get(7));
+
 		Assert.assertEquals(2, no);
 	}
 

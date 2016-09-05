@@ -24,19 +24,26 @@ public class NamedParameterStatement {
 	/*
 	Pattern to find parameters in the sql;
 		(['].*?[']) try to ignore characters between two quote
-		[:]([\w\d_]+) try to find parameter without :
+		[:]([\w\d_]+) try to find parameter without ':'
 	*/
-	private static final String PARAM_PATTERN = "(['].*?['])|[:]([\\w\\d_]+)";
+	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|[:]([\\w\\d_]+)");
+	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|([?])");
+	private static final Pattern SCHEMA_PATTERN = Pattern.compile("(from|join|into|update)[\\s]+(\\w+(\\.\\w+)?)", Pattern.CASE_INSENSITIVE);
 
 	// ------------------------------
 
 	private Map<String, List<Integer>> paramsPlacement = new HashMap<>();
 	private Map<String, Object> params = new HashMap<>();
+	private Map<Integer, Object> finalParams = new LinkedHashMap<>();
 
 	private boolean hasBatch = false;
 	private boolean ignoreExtraPassedParam = false;
 	private Class<? extends Date> dateClassReplacement;
-	private String query, finalQuery, schema, id;
+	private String query;
+	private String finalQuery;
+	private String finalIndexedQuery;
+	private String schema;
+	private String id;
 
 	private Connection connection;
 	private PreparedStatement preparedStatement;
@@ -69,15 +76,14 @@ public class NamedParameterStatement {
 
 	public static String applySchema(String schema, String query) {
 		StringBuffer builder = new StringBuffer();
-		Pattern p = Pattern.compile("(from|join|into|update)[\\s]+(\\w+(\\.\\w+)?)", Pattern.CASE_INSENSITIVE);
-		Matcher matcher = p.matcher(query);
+		Matcher matcher = SCHEMA_PATTERN.matcher(query);
 		while (matcher.find()) {
-			String rplc;
+			String replacement;
 			if (matcher.group(2).contains(".") || KEYWORDS.contains(matcher.group(2).toLowerCase()))
-				rplc = String.format("%s %s", matcher.group(1), matcher.group(2));
+				replacement = String.format("%s %s", matcher.group(1), matcher.group(2));
 			else
-				rplc = String.format("%s %s.%s", matcher.group(1), schema, matcher.group(2));
-			matcher.appendReplacement(builder, rplc);
+				replacement = String.format("%s %s.%s", matcher.group(1), schema, matcher.group(2));
+			matcher.appendReplacement(builder, replacement);
 		}
 		matcher.appendTail(builder);
 		return builder.toString();
@@ -86,8 +92,7 @@ public class NamedParameterStatement {
 	public static List<String> findParamsInQuery(String query, boolean changeToLower) {
 		List<String> result = new ArrayList<>();
 
-		Pattern p = Pattern.compile(PARAM_PATTERN);
-		Matcher matcher = p.matcher(query);
+		Matcher matcher = PARAM_PATTERN.matcher(query);
 
 		while (matcher.find()) {
 			if (matcher.group(1) == null) {
@@ -171,6 +176,14 @@ public class NamedParameterStatement {
 
 	public String getFinalQuery() {
 		return finalQuery;
+	}
+
+	public String getFinalIndexedQuery() {
+		return finalIndexedQuery;
+	}
+
+	public Map<Integer, Object> getFinalParams() {
+		return finalParams;
 	}
 
 	public NamedParameterStatement addOrReplaceParameter(String name, Object value) {
@@ -280,8 +293,7 @@ public class NamedParameterStatement {
 		logger.debug("Orig Query: {}", query);
 		StringBuffer builder = new StringBuffer();
 
-		Pattern p = Pattern.compile(PARAM_PATTERN);
-		Matcher matcher = p.matcher(query);
+		Matcher matcher = PARAM_PATTERN.matcher(query);
 		int noOfParams = 0;
 		while (matcher.find()) {
 			if (matcher.group(1) == null) { // the group enclosing characters in single quotes is null
@@ -336,9 +348,24 @@ public class NamedParameterStatement {
 		if (maxRows != null) {
 			preparedStatement.setMaxRows(maxRows);
 		}
+
+		builder = new StringBuffer();
+		matcher = PARAM_Q_MARK_PATTERN.matcher(finalQuery);
+		int idx = 1;
+		while (matcher.find()) {
+			if (matcher.group(2) != null) {
+				String replacement = String.format(" ?%s ", idx++);
+				matcher.appendReplacement(builder, replacement);
+			}
+		}
+		matcher.appendTail(builder);
+
+		finalIndexedQuery = builder.toString();
 	}
 
 	private void applyAllParams() throws SQLException {
+		finalParams.clear();
+
 		// Validate all params existence
 		List<String> missedParams = new ArrayList<>();
 		for (String param : paramsPlacement.keySet()) {
@@ -402,6 +429,7 @@ public class NamedParameterStatement {
 			}
 		}
 		preparedStatement.setObject(index, val);
+		finalParams.put(index, val);
 	}
 
 	private void applyPagination() {
