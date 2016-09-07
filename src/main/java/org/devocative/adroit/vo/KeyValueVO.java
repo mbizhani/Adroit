@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KeyValueVO<K extends Serializable, V extends Serializable> implements Serializable {
+public class KeyValueVO<K, V> implements Serializable {
 	private static final long serialVersionUID = 718387772269393769L;
 
 	private K key;
@@ -59,7 +59,7 @@ public class KeyValueVO<K extends Serializable, V extends Serializable> implemen
 		return getKey() != null ? getKey().hashCode() : 0;
 	}
 
-	public static <K extends Serializable, V extends Serializable> List<KeyValueVO<K, V>> fromMap(Map<K, V> map) {
+	public static <K, V> List<KeyValueVO<K, V>> fromMap(Map<K, V> map) {
 		List<KeyValueVO<K, V>> list = new ArrayList<>(map.size());
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			list.add(new KeyValueVO<>(entry.getKey(), entry.getValue()));
@@ -67,7 +67,7 @@ public class KeyValueVO<K extends Serializable, V extends Serializable> implemen
 		return list;
 	}
 
-	public static <K extends Serializable, V extends Serializable> Map<K, V> toMap(List<KeyValueVO<K, V>> list) {
+	public static <K, V> Map<K, V> toMap(List<KeyValueVO<K, V>> list) {
 		Map<K, V> map = new HashMap<>(list.size());
 		for (KeyValueVO<K, V> keyValue : list) {
 			map.put(keyValue.getKey(), keyValue.getValue());
