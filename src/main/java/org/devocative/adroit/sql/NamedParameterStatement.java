@@ -37,7 +37,7 @@ public class NamedParameterStatement {
 	private Map<Integer, Object> finalParams = new LinkedHashMap<>();
 
 	private boolean hasBatch = false;
-	private boolean ignoreExtraPassedParam = false;
+	private boolean ignoreExtraPassedParam = false, ignoreMissedParam = false;
 	private Class<? extends Date> dateClassReplacement;
 	private String query;
 	private String finalQuery;
@@ -231,6 +231,11 @@ public class NamedParameterStatement {
 		return this;
 	}
 
+	public NamedParameterStatement setIgnoreMissedParam(boolean ignoreMissedParam) {
+		this.ignoreMissedParam = ignoreMissedParam;
+		return this;
+	}
+
 	// ------------------------------ PUBLIC METHODS
 
 	public ResultSet executeQuery() throws SQLException {
@@ -370,7 +375,11 @@ public class NamedParameterStatement {
 		List<String> missedParams = new ArrayList<>();
 		for (String param : paramsPlacement.keySet()) {
 			if (!params.containsKey(param)) {
-				missedParams.add(param);
+				if (ignoreMissedParam) {
+					params.put(param, null);
+				} else {
+					missedParams.add(param);
+				}
 			}
 		}
 

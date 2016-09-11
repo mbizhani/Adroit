@@ -67,6 +67,28 @@ public class TestAdroit {
 		Assert.assertEquals("Jo%", nps.getFinalParams().get(7));
 
 		Assert.assertEquals(2, no);
+
+		nps = new NamedParameterStatement(sa)
+			.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
+				//.setParameter("edu", Arrays.asList(1, 2, 3))
+				//.setParameter("name", "Jo%")
+			.setIgnoreMissedParam(true)
+			.setPageIndex(1L)
+			.setPageSize(10L);
+
+		no = 0;
+		rs = nps.executeQuery();
+		while (rs.next()) {
+			System.out.println(rs.getString("c_name"));
+			no++;
+		}
+
+		Map<Integer, Object> finalParams = nps.getFinalParams();
+		Assert.assertEquals(0, no);
+		Assert.assertEquals(5, finalParams.size());
+		Assert.assertNull(finalParams.get(1));
+		Assert.assertNull(finalParams.get(2));
+		Assert.assertNull(finalParams.get(3));
 	}
 
 	@Test
