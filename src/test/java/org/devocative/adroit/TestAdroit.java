@@ -47,7 +47,8 @@ public class TestAdroit {
 
 		NamedParameterStatement nps =
 			new NamedParameterStatement(sa)
-				.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
+				.setQuery("select -- test :this \n /* test :that from comment */ * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
+				.setSchema(ConfigUtil.getString(true, "db.schema"))
 				.setParameter("edu", Arrays.asList(1, 2, 3))
 				.setParameter("name", "Jo%")
 				.setPageIndex(1L)
@@ -63,7 +64,7 @@ public class TestAdroit {
 		System.out.println(nps.getFinalIndexedQuery());
 		System.out.println(nps.getFinalParams());
 
-		Assert.assertEquals("select * from t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7  limit  ?8 , ?9 ", nps.getFinalIndexedQuery());
+		Assert.assertEquals("select -- test :this \n /* test :that from comment */ * from adroit.t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7  limit  ?8 , ?9 ", nps.getFinalIndexedQuery());
 		Assert.assertEquals("Jo%", nps.getFinalParams().get(7));
 
 		Assert.assertEquals(2, no);
@@ -93,7 +94,8 @@ public class TestAdroit {
 
 	@Test
 	public void testParamOfNPS() {
-		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' from dual where 1=:One and 2<>:two or :One=:two", false);
+		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' -- ignore :this \n" +
+			" /* and ignore :this too */ from dual where 1=:One and 2<>:two or :One=:two", false);
 		Assert.assertEquals(2, paramsInQuery.size());
 		Assert.assertNotEquals("one", paramsInQuery.get(0));
 		Assert.assertEquals("One", paramsInQuery.get(0));

@@ -24,11 +24,14 @@ public class NamedParameterStatement {
 	/*
 	Pattern to find parameters in the sql;
 		(['].*?[']) try to ignore characters between two quote
+		(--.*?\n) try to ignore characters in single line comments
+		(/[*].*?[*]/) try to ignore characters in inline comments
+
 		[:]([\w\d_]+) try to find parameter without ':'
 	*/
-	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|[:]([\\w\\d_]+)");
-	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|([?])");
-	private static final Pattern SCHEMA_PATTERN = Pattern.compile("(from|join|into|update)[\\s]+(\\w+(\\.\\w+)?)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|[:]([\\w\\d_]+)");
+	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|([?])");
+	private static final Pattern SCHEMA_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)", Pattern.CASE_INSENSITIVE);
 
 	// ------------------------------
 
@@ -78,12 +81,14 @@ public class NamedParameterStatement {
 		StringBuffer builder = new StringBuffer();
 		Matcher matcher = SCHEMA_PATTERN.matcher(query);
 		while (matcher.find()) {
-			String replacement;
-			if (matcher.group(2).contains(".") || KEYWORDS.contains(matcher.group(2).toLowerCase()))
-				replacement = String.format("%s %s", matcher.group(1), matcher.group(2));
-			else
-				replacement = String.format("%s %s.%s", matcher.group(1), schema, matcher.group(2));
-			matcher.appendReplacement(builder, replacement);
+			if (matcher.group(4) != null && matcher.group(5) != null) {
+				String replacement;
+				if (matcher.group(5).contains(".") || KEYWORDS.contains(matcher.group(5).toLowerCase()))
+					replacement = String.format("%s %s", matcher.group(4), matcher.group(5));
+				else
+					replacement = String.format("%s %s.%s", matcher.group(4), schema, matcher.group(5));
+				matcher.appendReplacement(builder, replacement);
+			}
 		}
 		matcher.appendTail(builder);
 		return builder.toString();
@@ -95,12 +100,12 @@ public class NamedParameterStatement {
 		Matcher matcher = PARAM_PATTERN.matcher(query);
 
 		while (matcher.find()) {
-			if (matcher.group(1) == null) {
+			if (matcher.group(4) != null) {
 				String param;
 				if (changeToLower) {
-					param = matcher.group(2).toLowerCase();
+					param = matcher.group(4).toLowerCase();
 				} else {
-					param = matcher.group(2);
+					param = matcher.group(4);
 				}
 
 				if (!result.contains(param)) {
@@ -301,9 +306,9 @@ public class NamedParameterStatement {
 		Matcher matcher = PARAM_PATTERN.matcher(query);
 		int noOfParams = 0;
 		while (matcher.find()) {
-			if (matcher.group(1) == null) { // the group enclosing characters in single quotes is null
+			if (matcher.group(4) != null) {
 				noOfParams++;
-				String param = matcher.group(2).toLowerCase();
+				String param = matcher.group(4).toLowerCase();
 				logger.debug("Param: {}", param);
 				if (!paramsPlacement.containsKey(param)) {
 					paramsPlacement.put(param, new ArrayList<Integer>());
@@ -358,7 +363,7 @@ public class NamedParameterStatement {
 		matcher = PARAM_Q_MARK_PATTERN.matcher(finalQuery);
 		int idx = 1;
 		while (matcher.find()) {
-			if (matcher.group(2) != null) {
+			if (matcher.group(4) != null) {
 				String replacement = String.format(" ?%s ", idx++);
 				matcher.appendReplacement(builder, replacement);
 			}
