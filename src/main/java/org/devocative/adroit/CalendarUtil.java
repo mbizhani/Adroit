@@ -2,6 +2,7 @@ package org.devocative.adroit;
 
 import com.ibm.icu.text.SimpleDateFormat;
 import com.ibm.icu.util.Calendar;
+import com.ibm.icu.util.TimeZone;
 import com.ibm.icu.util.ULocale;
 import org.devocative.adroit.vo.DateFieldVO;
 
@@ -11,13 +12,20 @@ import java.util.Date;
 public final class CalendarUtil {
 	private static final ULocale fa = new ULocale("en_US@calendar=persian");
 
+	// ------------------------------ DATE CONVERSION
+
 	public static String toPersian(Date dt, String pattern) {
 		return new SimpleDateFormat(pattern, fa).format(dt);
 	}
 
 	public static DateFieldVO toPersianDateField(Date dt) {
-		Calendar calendar = Calendar.getInstance(fa);
+		return toPersianDateField(dt, java.util.TimeZone.getDefault());
+	}
+
+	public static DateFieldVO toPersianDateField(Date dt, java.util.TimeZone timeZone) {
+		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(timeZone.getID()), fa);
 		calendar.setTime(dt);
+
 		return new DateFieldVO()
 			.setYear(calendar.get(Calendar.YEAR))
 			.setMonth(calendar.get(Calendar.MONTH) + 1)
@@ -37,13 +45,19 @@ public final class CalendarUtil {
 	}
 
 	public static Date toGregorian(DateFieldVO dateField) {
-		Calendar calendar = Calendar.getInstance(fa);
+		return toGregorian(dateField, java.util.TimeZone.getDefault());
+	}
+
+	public static Date toGregorian(DateFieldVO dateField, java.util.TimeZone timeZone) {
+		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(timeZone.getID()), fa);
 		calendar.set(Calendar.YEAR, dateField.getYear());
 		calendar.set(Calendar.MONTH, dateField.getMonth() - 1);
 		calendar.set(Calendar.DAY_OF_MONTH, dateField.getDay());
 		calendar.set(Calendar.HOUR_OF_DAY, dateField.getHour());
 		calendar.set(Calendar.MINUTE, dateField.getMinute());
 		calendar.set(Calendar.SECOND, dateField.getSecond());
+		calendar.set(Calendar.MILLISECOND, 0);
+
 		return calendar.getTime();
 	}
 
@@ -68,10 +82,21 @@ public final class CalendarUtil {
 		calendar.set(Calendar.HOUR_OF_DAY, dateField.getHour());
 		calendar.set(Calendar.MINUTE, dateField.getMinute());
 		calendar.set(Calendar.SECOND, dateField.getSecond());
+		calendar.set(Calendar.MILLISECOND, 0);
+
 		return calendar.getTime();
 	}
 
+	// ------------------------------
+
 	public static String formatDate(Date dt, String pattern) {
 		return new SimpleDateFormat(pattern).format(dt);
+	}
+
+	public static Date add(Date dt, int field, int amount) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(dt);
+		cal.add(field, amount);
+		return cal.getTime();
 	}
 }
