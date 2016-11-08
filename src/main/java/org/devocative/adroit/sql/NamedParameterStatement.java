@@ -55,7 +55,7 @@ public class NamedParameterStatement {
 	private long totalBatchCount = 0, batchCount = 0;
 	private Integer fetchSize, queryTimeout, maxRows;
 
-	private Long pageIndex, pageSize;
+	private Long firstResult, maxResults;
 	private EDatabaseType databaseType;
 
 	// ------------------------------ CONSTRUCTORS
@@ -216,13 +216,13 @@ public class NamedParameterStatement {
 		return connection;
 	}
 
-	public NamedParameterStatement setPageIndex(Long pageIndex) {
-		this.pageIndex = pageIndex;
+	public NamedParameterStatement setFirstResult(Long firstResult) {
+		this.firstResult = firstResult;
 		return this;
 	}
 
-	public NamedParameterStatement setPageSize(Long pageSize) {
-		this.pageSize = pageSize;
+	public NamedParameterStatement setMaxResults(Long maxResults) {
+		this.maxResults = maxResults;
 		return this;
 	}
 
@@ -447,7 +447,7 @@ public class NamedParameterStatement {
 	}
 
 	private void applyPagination() {
-		if (preparedStatement != null || (pageIndex == null && pageSize == null)) {
+		if (preparedStatement != null || (firstResult == null && maxResults == null)) {
 			return;
 		}
 
@@ -455,20 +455,49 @@ public class NamedParameterStatement {
 			throw new RuntimeException("Invalid NamedParameterStatement: no query!");
 		}
 
+		if (firstResult != null && firstResult < 1) {
+			throw new RuntimeException("Invalid 'firstResult' value, must be greater than zero: " + firstResult);
+		}
+
+		if (maxResults != null && maxResults < 1) {
+			throw new RuntimeException("Invalid 'maxResults' value, must be greater than zero: " + maxResults);
+		}
+
 		switch (findDatabaseType()) {
 
 			case Oracle: // oracle records index starts from 1
-				query = String.format(
-					"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg between :pg_first and :pg_last",
-					query);
-				params.put("pg_first", (pageIndex - 1) * pageSize + 1);
-				params.put("pg_last", pageIndex * pageSize);
+				if (firstResult != null && maxResults != null) {
+					query = String.format(
+						"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg between :pg_first and :pg_last",
+						query);
+					params.put("pg_first", firstResult);
+					params.put("pg_last", firstResult + maxResults - 1);
+				} else if (firstResult != null) {
+					query = String.format(
+						"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg >= :pg_first",
+						query);
+					params.put("pg_first", firstResult);
+				} else {
+					query = String.format(
+						"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg <= :pg_last",
+						query);
+					params.put("pg_last", maxResults);
+				}
 				break;
 
 			case MySql: // mysql records index starts from 0
-				query = String.format("%s limit :pg_first,:pg_size", query);
-				params.put("pg_first", (pageIndex - 1) * pageSize);
-				params.put("pg_size", pageSize);
+				if (firstResult != null && maxResults != null) {
+					query = String.format("%s limit :pg_first,:pg_size", query);
+					params.put("pg_first", firstResult - 1);
+					params.put("pg_size", maxResults);
+				} else if (firstResult != null) {
+					query = String.format("%s limit :pg_first,:pg_size", query);
+					params.put("pg_first", firstResult - 1);
+					params.put("pg_size", Long.MAX_VALUE);
+				} else {
+					query = String.format("%s limit :pg_size", query);
+					params.put("pg_size", maxResults);
+				}
 				break;
 
 			case Unknown:

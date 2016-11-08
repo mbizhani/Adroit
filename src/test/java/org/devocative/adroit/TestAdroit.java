@@ -51,8 +51,9 @@ public class TestAdroit {
 				.setSchema(ConfigUtil.getString(true, "db.schema"))
 				.setParameter("edu", Arrays.asList(1, 2, 3))
 				.setParameter("name", "Jo%")
-				.setPageIndex(1L)
-				.setPageSize(10L);
+				.setFirstResult(1L)
+			//.setMaxResults(10L)
+			;
 
 		int no = 0;
 		ResultSet rs = nps.executeQuery();
@@ -74,8 +75,9 @@ public class TestAdroit {
 				//.setParameter("edu", Arrays.asList(1, 2, 3))
 				//.setParameter("name", "Jo%")
 			.setIgnoreMissedParam(true)
-			.setPageIndex(1L)
-			.setPageSize(10L);
+//			.setFirstResult(1L)
+			.setMaxResults(10L)
+		;
 
 		no = 0;
 		rs = nps.executeQuery();
@@ -86,7 +88,7 @@ public class TestAdroit {
 
 		Map<Integer, Object> finalParams = nps.getFinalParams();
 		Assert.assertEquals(0, no);
-		Assert.assertEquals(5, finalParams.size());
+		Assert.assertEquals(4, finalParams.size());
 		Assert.assertNull(finalParams.get(1));
 		Assert.assertNull(finalParams.get(2));
 		Assert.assertNull(finalParams.get(3));
