@@ -226,6 +226,7 @@ public class TestAdroit {
 		}
 	}
 
+	@Test
 	public void testCalendarInThread() {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.YEAR, 2016);
@@ -243,6 +244,13 @@ public class TestAdroit {
 			CalendarUtil.formatDate(jan_01_2016, "yyyy-MM-dd"),
 			CalendarUtil.formatDate(cal.getTime(), "yyyy-MM-dd")
 		);
+
+		Assert.assertEquals(
+			jan_01_2016,
+			CalendarUtil.parseDate("2016-01-01", "yyyy-MM-dd")
+		);
+
+
 
 		System.out.println(CalendarUtil.toPersian(cal.getTime(), "yyyy-MM-dd"));
 		Assert.assertEquals("1394-10-11", CalendarUtil.toPersian(cal.getTime(), "yyyy-MM-dd"));

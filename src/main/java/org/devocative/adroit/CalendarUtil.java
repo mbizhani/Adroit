@@ -93,6 +93,14 @@ public final class CalendarUtil {
 		return new SimpleDateFormat(pattern).format(dt);
 	}
 
+	public static Date parseDate(String dt, String pattern) {
+		try {
+			return new SimpleDateFormat(pattern).parse(dt);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static Date add(Date dt, int field, int amount) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(dt);
