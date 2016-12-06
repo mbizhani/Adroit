@@ -22,16 +22,22 @@ public class NamedParameterStatement {
 	}
 
 	/*
-	Pattern to find parameters in the sql;
-		(['].*?[']) try to ignore characters between two quote
-		(--.*?\n) try to ignore characters in single line comments
-		(/[*].*?[*]/) try to ignore characters in inline comments
+	Patterns to ignore:
+		(['].*?[']) ignore characters between two single quote (SQL string constant)
+		(["].*?["]) ignore characters between two double quote (SQL identifier)
+		(--.*?\n) ignore characters in single line comments
+		(/[*].*?[*]/) ignore characters in inline comments
+		(extract[(].+?[)]) ignore characters in extract() function: it has "from" in its syntax e.g. extract(day from ?)
 
-		[:]([\w\d_]+) try to find parameter without ':'
+	Main Patterns:
+		[:]([\w\d_]+) finding parameter without ':'
+		(from|join|into|update)[\s]+(\w+([.]\w+)?) finding table name with schema if mentioned
 	*/
 	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|[:]([\\w\\d_]+)");
 	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|([?])");
-	private static final Pattern SCHEMA_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern SCHEMA_PATTERN = Pattern.compile(
+		"(['].*?['])|([\"].*?[\"])|(--.*?\\n)|(/[*].*?[*]/)|(extract[(].+?[)])|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)",
+		Pattern.CASE_INSENSITIVE);
 
 	// ------------------------------
 
@@ -81,12 +87,12 @@ public class NamedParameterStatement {
 		StringBuffer builder = new StringBuffer();
 		Matcher matcher = SCHEMA_PATTERN.matcher(query);
 		while (matcher.find()) {
-			if (matcher.group(4) != null && matcher.group(5) != null) {
+			if (matcher.group(6) != null && matcher.group(7) != null) {
 				String replacement;
-				if (matcher.group(5).contains(".") || KEYWORDS.contains(matcher.group(5).toLowerCase()))
-					replacement = String.format("%s %s", matcher.group(4), matcher.group(5));
+				if (matcher.group(7).contains(".") || KEYWORDS.contains(matcher.group(7).toLowerCase()))
+					replacement = String.format("%s %s", matcher.group(6), matcher.group(7));
 				else
-					replacement = String.format("%s %s.%s", matcher.group(4), schema, matcher.group(5));
+					replacement = String.format("%s %s.%s", matcher.group(6), schema, matcher.group(7));
 				matcher.appendReplacement(builder, replacement);
 			}
 		}

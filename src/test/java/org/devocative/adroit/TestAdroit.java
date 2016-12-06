@@ -105,6 +105,51 @@ public class TestAdroit {
 	}
 
 	@Test
+	public void testSchemaOfNPS() {
+		String q =
+			"select \n" +
+				"--comment to test from schema \n" +  //NOTE: no schema addition
+				"/*comment to test from schema*/ \n" + //NOTE: no schema addition
+				"eq.code equipment_code,\n" +
+				"'a from and join in string constant' as \"from and join and into id\"\n" + //NOTE: no schema addition
+				"from\n" +
+				"(select \n" +
+				"flr.equipment equipment_id ,\n" +
+
+				//NOTE: no schema addition /!\
+				"ROUND((extract(DAY FROM MAX(NVL(flr.endDateTime,SYSDATE))- MIN(flr.startDateTime)) - SUM(extract(DAY FROM NVL(flr.endDateTime,SYSDATE) - flr.startDateTime))) / (COUNT(*) - 1 ),2) mtbf\n" +
+
+				//NOTE: schema addition to "Failure" but not to "Attempt" /!\
+				"from Failure flr, Attempt atm \n" +
+				"where flr.equipment = :eq_id and flr.startDateTime >= :start_date and flr.endDateTime <= :end_date and flr.id = atm.id\n" +
+				"group by flr.equipment) T1\n" +
+				"join Equipment eq on T1.equipment_id = eq.id\n" + //NOTE: schema addition
+				"join Asset ast on eq.vrAsset = ast.id\n" +        //NOTE: schema addition
+				"join Item item on ast.vrPhysicalItem = item.id";  //NOTE: schema addition
+
+		String expected =
+			"select \n" +
+				"--comment to test from schema \n" +
+				"/*comment to test from schema*/ \n" +
+				"eq.code equipment_code,\n" +
+				"'a from and join in string constant' as \"from and join and into id\"\n" +
+				"from\n" +
+				"(select \n" +
+				"flr.equipment equipment_id ,\n" +
+				"ROUND((extract(DAY FROM MAX(NVL(flr.endDateTime,SYSDATE))- MIN(flr.startDateTime)) - SUM(extract(DAY FROM NVL(flr.endDateTime,SYSDATE) - flr.startDateTime))) / (COUNT(*) - 1 ),2) mtbf\n" +
+				"from qaz.Failure flr, Attempt atm \n" +
+				"where flr.equipment = :eq_id and flr.startDateTime >= :start_date and flr.endDateTime <= :end_date and flr.id = atm.id\n" +
+				"group by flr.equipment) T1\n" +
+				"join qaz.Equipment eq on T1.equipment_id = eq.id\n" +
+				"join qaz.Asset ast on eq.vrAsset = ast.id\n" +
+				"join qaz.Item item on ast.vrPhysicalItem = item.id";
+
+		String result = NamedParameterStatement.applySchema("qaz", q);
+
+		Assert.assertEquals(expected, result);
+	}
+
+	@Test
 	public void testConfigUtil() {
 		Assert.assertEquals(123L, ConfigUtil.getInteger(true, "int.key").longValue());
 
@@ -249,7 +294,6 @@ public class TestAdroit {
 			jan_01_2016,
 			CalendarUtil.parseDate("2016-01-01", "yyyy-MM-dd")
 		);
-
 
 
 		System.out.println(CalendarUtil.toPersian(cal.getTime(), "yyyy-MM-dd"));
