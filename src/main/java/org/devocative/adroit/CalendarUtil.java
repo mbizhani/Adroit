@@ -33,6 +33,7 @@ public final class CalendarUtil {
 			.setHour(calendar.get(Calendar.HOUR_OF_DAY))
 			.setMinute(calendar.get(Calendar.MINUTE))
 			.setSecond(calendar.get(Calendar.SECOND))
+			.setMillisecond(calendar.get(Calendar.MILLISECOND))
 			;
 	}
 
@@ -56,7 +57,7 @@ public final class CalendarUtil {
 		calendar.set(Calendar.HOUR_OF_DAY, dateField.getHour());
 		calendar.set(Calendar.MINUTE, dateField.getMinute());
 		calendar.set(Calendar.SECOND, dateField.getSecond());
-		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.MILLISECOND, dateField.getMillisecond());
 
 		return calendar.getTime();
 	}
@@ -71,6 +72,7 @@ public final class CalendarUtil {
 			.setHour(calendar.get(Calendar.HOUR_OF_DAY))
 			.setMinute(calendar.get(Calendar.MINUTE))
 			.setSecond(calendar.get(Calendar.SECOND))
+			.setMillisecond(calendar.get(Calendar.MILLISECOND))
 			;
 	}
 
@@ -105,6 +107,16 @@ public final class CalendarUtil {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(dt);
 		cal.add(field, amount);
+		return cal.getTime();
+	}
+
+	public static Date removeTime(Date dt) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(dt);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
 	}
 }

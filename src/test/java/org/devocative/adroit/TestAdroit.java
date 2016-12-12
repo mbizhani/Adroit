@@ -20,6 +20,11 @@ public class TestAdroit {
 
 	@Test
 	public void testExcelExporter() throws IOException {
+		File testFile = new File("test.xlsx");
+		if (testFile.isFile() && testFile.exists()) {
+			testFile.delete();
+		}
+
 		ExcelExporter exporter = new ExcelExporter("Sheet");
 
 		exporter.setColumnsHeader(Arrays.asList("A", "B", "C"));
@@ -32,7 +37,6 @@ public class TestAdroit {
 		exporter.generate(stream);
 		stream.close();
 
-		File testFile = new File("test.xlsx");
 		Assert.assertTrue(testFile.exists());
 	}
 
@@ -306,6 +310,16 @@ public class TestAdroit {
 		Date aba_15_1394 = CalendarUtil.toGregorian(new DateFieldVO(1394, 8, 15));
 		System.out.println("aba_15_1394 = " + aba_15_1394);
 		Assert.assertEquals("2015-11-06", CalendarUtil.formatDate(aba_15_1394, "yyyy-MM-dd"));
+
+		Date date = CalendarUtil.removeTime(new Date());
+		DateFieldVO dateField = CalendarUtil.getDateField(date);
+		Assert.assertEquals(0, dateField.getHour());
+		Assert.assertEquals(0, dateField.getMinute());
+		Assert.assertEquals(0, dateField.getSecond());
+		Assert.assertEquals(0, dateField.getMillisecond());
+		Assert.assertNotEquals(0, dateField.getYear());
+		Assert.assertNotEquals(0, dateField.getMonth());
+		Assert.assertNotEquals(0, dateField.getDay());
 	}
 
 	@Test
