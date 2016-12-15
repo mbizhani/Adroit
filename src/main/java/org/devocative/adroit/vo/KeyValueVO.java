@@ -40,7 +40,13 @@ public class KeyValueVO<K, V> implements Serializable {
 
 	@Override
 	public String toString() {
-		return getValue() != null ? getValue().toString() : "?";
+		String str = "?";
+		if (getValue() != null) {
+			str = getValue().toString();
+		} else if (getKey() != null) {
+			str = getKey().toString();
+		}
+		return str;
 	}
 
 	@Override
