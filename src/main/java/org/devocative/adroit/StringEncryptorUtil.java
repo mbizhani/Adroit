@@ -68,12 +68,16 @@ public final class StringEncryptorUtil {
 	}
 
 	public static String decrypt(String str) {
-		if (bypassSecurity || deCipher == null) {
+		if (bypassSecurity) {
 			return str;
 		}
 
 		if (str == null) {
 			throw new RuntimeException("Invalid parameter: null");
+		}
+
+		if (deCipher == null) {
+			throw new RuntimeException("No Decryption Cipher: Bad StringEncryptorUtil init");
 		}
 
 		try {
@@ -86,12 +90,16 @@ public final class StringEncryptorUtil {
 	}
 
 	public static String encrypt(String str) {
-		if (bypassSecurity || enCipher == null) {
+		if (bypassSecurity) {
 			return str;
 		}
 
 		if (str == null) {
 			throw new RuntimeException("Invalid parameter: null");
+		}
+
+		if (enCipher == null) {
+			throw new RuntimeException("No Encryption Cipher: Bad StringEncryptorUtil init");
 		}
 
 		try {
