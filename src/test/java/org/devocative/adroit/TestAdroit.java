@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -17,6 +18,9 @@ import java.sql.ResultSet;
 import java.util.*;
 
 public class TestAdroit {
+	String keyStorePass = "adroitPassWord";
+	String entryName = "adroit";
+	String entryProtectionParam = "WiPHF7JjfuKHJz7jFI18";
 
 	@Test
 	public void testExcelExporter() throws IOException {
@@ -165,8 +169,6 @@ public class TestAdroit {
 
 		Assert.assertEquals("Hello", ConfigUtil.getString(true, "string.key"));
 
-		Assert.assertEquals("salam", ConfigUtil.getString(true, "encrypted.key"));
-
 		Assert.assertEquals(3, ConfigUtil.getList(true, "list.key").size());
 
 		Assert.assertEquals(0, ConfigUtil.getList(false, "empty.list.key ").size());
@@ -188,6 +190,10 @@ public class TestAdroit {
 		Assert.assertTrue(ConfigUtil.hasKey(TestConfigKey.NOK));
 		Assert.assertTrue(ConfigUtil.hasKey("empty.list.key"));
 		Assert.assertFalse(ConfigUtil.hasKey("my.key"));
+
+		StringEncryptorUtil.init(TestAdroit.class.getResourceAsStream("/adroit.ks"), keyStorePass, entryName, entryProtectionParam);
+		Assert.assertEquals("The Config Value!", ConfigUtil.getString(true, "encrypted.key.suffix"));
+		Assert.assertEquals("The Config Value!", ConfigUtil.getString(true, "encrypted.key.prefix"));
 	}
 
 	@Test
@@ -205,7 +211,27 @@ public class TestAdroit {
 
 		Assert.assertEquals(StringEncryptorUtil.encodeBase64(new byte[]{1, 2, 3, 4}), "AQIDBA==");
 
-		//TODO test enc/dec
+		File keyStoreFile = new File("adroit.ks");
+		keyStoreFile.delete();
+		Assert.assertFalse(keyStoreFile.exists());
+
+		KeyTool.generatedKeyStoreWithSecureKey(keyStoreFile, keyStorePass, "p6oGS8f8vK7V5wRir9EQ", entryName, entryProtectionParam);
+
+		Assert.assertTrue(keyStoreFile.exists());
+
+		try {
+			StringEncryptorUtil.init(new FileInputStream(keyStoreFile), keyStorePass, entryName, entryProtectionParam);
+			String main = "Hello World! Spec Char: ";
+
+			String encrypt = StringEncryptorUtil.encrypt(main);
+			System.out.println("encrypt = " + encrypt);
+
+			String decrypt = StringEncryptorUtil.decrypt(encrypt);
+			System.out.println("decrypt = " + decrypt);
+			Assert.assertEquals(main, decrypt);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Test

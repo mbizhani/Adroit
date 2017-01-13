@@ -4,7 +4,8 @@ import java.io.*;
 import java.util.*;
 
 public final class ConfigUtil {
-	private static final String ENC_SUFFIX = ".ENC";
+	private static final String ENC_SUFFIX = "~ENC";
+	private static final String ENC_PREFIX = "ENC~";
 	private static final Properties PROPERTIES = new Properties();
 	private static final List<IConfigKey> CONFIG_KEYS = new ArrayList<>();
 
@@ -33,14 +34,13 @@ public final class ConfigUtil {
 		String value = PROPERTIES.getProperty(key);
 
 		if (value == null && PROPERTIES.containsKey(key + ENC_SUFFIX)) {
-			try {
-				value = PROPERTIES.getProperty(key + ENC_SUFFIX);
-				if (value != null) {
-					value = StringEncryptorUtil.decrypt(value);
-				}
-			} catch (Exception e) {
-				throw new RuntimeException("Problem decrypting key: " + key);
+			value = PROPERTIES.getProperty(key + ENC_SUFFIX);
+			if (value != null) {
+				value = StringEncryptorUtil.decrypt(value);
 			}
+		} else if (value != null && value.trim().startsWith(ENC_PREFIX)) {
+			value = value.substring(4);
+			value = StringEncryptorUtil.decrypt(value);
 		}
 
 		if (validate) {

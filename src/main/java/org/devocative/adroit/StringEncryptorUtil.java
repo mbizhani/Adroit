@@ -2,12 +2,44 @@ package org.devocative.adroit;
 
 import org.apache.commons.codec.binary.Base64;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public final class StringEncryptorUtil {
 	private static boolean bypassSecurity = false;
+	private static Cipher deCipher, enCipher;
+
+	// ------------------------------
+
+	public static void init(InputStream keyStoreStream, String keyStorePass, String entryName, String entryProtectionParam) {
+		if (bypassSecurity) {
+			return;
+		}
+
+		try {
+			KeyStore ks = KeyStore.getInstance("JCEKS");
+			ks.load(keyStoreStream, keyStorePass.toCharArray());
+
+			KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(entryName,
+				new KeyStore.PasswordProtection(entryProtectionParam.toCharArray()));
+			SecretKey key = entry.getSecretKey();
+
+			enCipher = Cipher.getInstance(key.getAlgorithm());
+			enCipher.init(Cipher.ENCRYPT_MODE, key);
+
+			deCipher = Cipher.getInstance(key.getAlgorithm());
+			deCipher.init(Cipher.DECRYPT_MODE, key);
+
+			keyStoreStream.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public static void setBypassSecurity(boolean bypassSecurity) {
 		StringEncryptorUtil.bypassSecurity = bypassSecurity;
@@ -18,7 +50,7 @@ public final class StringEncryptorUtil {
 	}
 
 	public static String decodeBase64(String str) {
-		return new String(Base64.decodeBase64(str), StandardCharsets.UTF_8);
+		return new String(decodeBASE64(str), StandardCharsets.UTF_8);
 	}
 
 	public static String hash(String str) {
@@ -36,10 +68,44 @@ public final class StringEncryptorUtil {
 	}
 
 	public static String decrypt(String str) {
-		return str;
+		if (bypassSecurity || deCipher == null) {
+			return str;
+		}
+
+		if (str == null) {
+			throw new RuntimeException("Invalid parameter: null");
+		}
+
+		try {
+			byte[] dec = decodeBASE64(str);
+			byte[] utf8 = deCipher.doFinal(dec);
+			return new String(utf8, "UTF8");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static String encrypt(String str) {
-		return str;
+		if (bypassSecurity || enCipher == null) {
+			return str;
+		}
+
+		if (str == null) {
+			throw new RuntimeException("Invalid parameter: null");
+		}
+
+		try {
+			byte[] utf8 = str.getBytes("UTF8");
+			byte[] enc = enCipher.doFinal(utf8);
+			return encodeBase64(enc);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	// ------------------------------
+
+	private static byte[] decodeBASE64(String str) {
+		return Base64.decodeBase64(str);
 	}
 }
