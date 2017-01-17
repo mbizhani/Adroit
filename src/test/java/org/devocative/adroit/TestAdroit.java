@@ -450,6 +450,43 @@ public class TestAdroit {
 		Assert.assertEquals(0, cache.getSize());
 	}
 
+	@Test
+	public void testAdroitList() {
+		AdroitList<String> strings = new AdroitList<>(String.CASE_INSENSITIVE_ORDER);
+		strings.add("ali");
+		strings.add("ALI");
+
+		Assert.assertEquals(2, strings.size());
+
+		Assert.assertTrue(strings.contains("Ali"));
+		Assert.assertTrue(strings.contains("ALi"));
+		Assert.assertTrue(strings.contains("aLi"));
+		Assert.assertTrue(strings.contains("alI"));
+		Assert.assertEquals(0, strings.indexOf("ALI"));
+
+		Assert.assertEquals("ali", strings.get(0));
+		Assert.assertNotEquals("ALI", strings.get(0));
+
+		Assert.assertEquals("ALI", strings.get(1));
+		Assert.assertNotEquals("ali", strings.get(1));
+
+
+		strings = new AdroitList<>();
+		strings.add("ali");
+		strings.add("ALI");
+
+		Assert.assertFalse(strings.contains("Ali"));
+		Assert.assertFalse(strings.contains("ALi"));
+		Assert.assertFalse(strings.contains("aLi"));
+		Assert.assertFalse(strings.contains("alI"));
+
+		Assert.assertEquals("ali", strings.get(0));
+		Assert.assertNotEquals("ALI", strings.get(0));
+
+		Assert.assertEquals("ALI", strings.get(1));
+		Assert.assertNotEquals("ali", strings.get(1));
+	}
+
 	// ------------------------------
 
 	public static class ListHolder {
