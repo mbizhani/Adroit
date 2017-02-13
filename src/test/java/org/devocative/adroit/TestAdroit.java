@@ -1,10 +1,14 @@
 package org.devocative.adroit;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import org.devocative.adroit.cache.LRUCache;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.NamedParameterStatement;
 import org.devocative.adroit.vo.DateFieldVO;
 import org.devocative.adroit.vo.KeyValueVO;
+import org.devocative.adroit.xml.AdroitXStream;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -487,6 +491,40 @@ public class TestAdroit {
 		Assert.assertNotEquals("ali", strings.get(1));
 	}
 
+	@Test
+	public void testXML() {
+		BeanAndXml bax = new BeanAndXml()
+			.setAttr("ATTR")
+			.setText("a < b && c >= 45 %% @")
+			.setBody("Hello\n\tHow are you?\n~!@#$%^&*()_+}{][\\//><");
+
+
+		XStream xStream = new AdroitXStream();
+		xStream.processAnnotations(BeanAndXml.class);
+		String xml = xStream.toXML(bax);
+		System.out.println(xml);
+		Assert.assertEquals("<bean attr=\"ATTR\" writeTrue=\"true\">\n" +
+			"\t<text><![CDATA[a < b && c >= 45 %% @]]></text>\n" +
+			"\t<body><![CDATA[Hello\n" +
+			"\tHow are you?\n" +
+			"~!@#$%^&*()_+}{][\\//><]]></body>\n" +
+			"</bean>", xml);
+
+		BeanAndXml bax2 = (BeanAndXml) xStream.fromXML(xml);
+		Assert.assertTrue(bax2.equals(bax));
+
+		xStream = new AdroitXStream(true);
+		xStream.processAnnotations(BeanAndXml.class);
+		xml = xStream.toXML(bax);
+		System.out.println(xml);
+		Assert.assertEquals("<bean attr=\"ATTR\" writeTrue=\"true\"><text><![CDATA[a < b && c >= 45 %% @]]></text><body><![CDATA[Hello\n" +
+			"\tHow are you?\n" +
+			"~!@#$%^&*()_+}{][\\//><]]></body></bean>", xml);
+
+		bax2 = (BeanAndXml) xStream.fromXML(xml);
+		Assert.assertTrue(bax2.equals(bax));
+	}
+
 	// ------------------------------
 
 	public static class ListHolder {
@@ -502,6 +540,96 @@ public class TestAdroit {
 
 		public void setList(List list) {
 			this.list = list;
+		}
+	}
+
+	@XStreamAlias("bean")
+	public static class BeanAndXml {
+		@XStreamAsAttribute
+		private String attr;
+
+		private String text;
+
+		private String body;
+
+		@XStreamAsAttribute
+		private boolean writeFalse = false;
+
+		@XStreamAsAttribute
+		private boolean writeTrue = true;
+
+		// ------------------------------
+
+		public String getAttr() {
+			return attr;
+		}
+
+		public BeanAndXml setAttr(String attr) {
+			this.attr = attr;
+			return this;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public BeanAndXml setText(String text) {
+			this.text = text;
+			return this;
+		}
+
+		public String getBody() {
+			return body;
+		}
+
+		public BeanAndXml setBody(String body) {
+			this.body = body;
+			return this;
+		}
+
+		public boolean isWriteFalse() {
+			return writeFalse;
+		}
+
+		public BeanAndXml setWriteFalse(boolean writeFalse) {
+			this.writeFalse = writeFalse;
+			return this;
+		}
+
+		public boolean isWriteTrue() {
+			return writeTrue;
+		}
+
+		public BeanAndXml setWriteTrue(boolean writeTrue) {
+			this.writeTrue = writeTrue;
+			return this;
+		}
+
+		// ------------------------------
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof BeanAndXml)) return false;
+
+			BeanAndXml that = (BeanAndXml) o;
+
+			if (isWriteFalse() != that.isWriteFalse()) return false;
+			if (isWriteTrue() != that.isWriteTrue()) return false;
+			if (getAttr() != null ? !getAttr().equals(that.getAttr()) : that.getAttr() != null) return false;
+			if (getText() != null ? !getText().equals(that.getText()) : that.getText() != null) return false;
+			return !(getBody() != null ? !getBody().equals(that.getBody()) : that.getBody() != null);
+
+		}
+
+		@Override
+		public int hashCode() {
+			int result = getAttr() != null ? getAttr().hashCode() : 0;
+			result = 31 * result + (getText() != null ? getText().hashCode() : 0);
+			result = 31 * result + (getBody() != null ? getBody().hashCode() : 0);
+			result = 31 * result + (isWriteFalse() ? 1 : 0);
+			result = 31 * result + (isWriteTrue() ? 1 : 0);
+			return result;
 		}
 	}
 }
