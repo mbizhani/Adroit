@@ -4,6 +4,7 @@ package org.devocative.adroit.sql;
 enum EDatabaseType {
 	Oracle("oracledriver", "jdbc:oracle"),
 	MySql("mysql", "jdbc:mysql"),
+	HSQLDB("hsqldb", "jdbc:hsqldb"),
 	Unknown("-", "-");
 
 	private String driverHint;

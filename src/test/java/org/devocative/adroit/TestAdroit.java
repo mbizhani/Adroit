@@ -5,11 +5,13 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import org.devocative.adroit.cache.LRUCache;
 import org.devocative.adroit.obuilder.ObjectBuilder;
+import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
 import org.devocative.adroit.vo.DateFieldVO;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.adroit.xml.AdroitXStream;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -17,7 +19,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.util.*;
 
@@ -25,6 +26,23 @@ public class TestAdroit {
 	String keyStorePass = "adroitPassWord";
 	String entryName = "adroit";
 	String entryProtectionParam = "WiPHF7JjfuKHJz7jFI18";
+
+	static Connection connection;
+
+	@BeforeClass
+	public static void init() {
+		InitDB initDB = new InitDB();
+		initDB
+			.setDriver(ConfigUtil.getString(true, "db.driver"))
+			.setUrl(ConfigUtil.getString(true, "db.url"))
+			.setPassword(ConfigUtil.getString(true, "db.username"))
+			.setPassword(ConfigUtil.getString("db.password", ""))
+			.addScript("src/test/resources/init_hsql.sql");
+
+		initDB.build();
+
+		connection = initDB.getConnection();
+	}
 
 	@Test
 	public void testExcelExporter() throws IOException {
@@ -50,15 +68,8 @@ public class TestAdroit {
 
 	@Test
 	public void testNPS() throws Exception {
-		Class.forName(ConfigUtil.getString(true, "db.driver"));
-
-		Connection sa = DriverManager.getConnection(
-			ConfigUtil.getString(true, "db.url"),
-			ConfigUtil.getString(true, "db.username"),
-			ConfigUtil.getString("db.password", ""));
-
 		NamedParameterStatement nps =
-			new NamedParameterStatement(sa)
+			new NamedParameterStatement(connection)
 				.setQuery("select -- test :this \n /* test :that from comment */ * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
 				.setSchema(ConfigUtil.getString(true, "db.schema"))
 				.setParameter("edu", Arrays.asList(1, 2, 3))
@@ -77,12 +88,16 @@ public class TestAdroit {
 		System.out.println(nps.getFinalIndexedQuery());
 		System.out.println(nps.getFinalParams());
 
-		Assert.assertEquals("select -- test :this \n /* test :that from comment */ * from adroit.t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7  limit  ?8 , ?9 ", nps.getFinalIndexedQuery());
+		//MYSQL Assert.assertEquals("select -- test :this \n /* test :that from comment */ * from adroit.t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7  limit  ?8 , ?9 ", nps.getFinalIndexedQuery());
+		Assert.assertEquals(
+			"select * from (select a.*, rownum rnum_pg from ( " +
+				"select -- test :this \n /* test :that from comment */ * from public.t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7 " +
+				" ) a) where rnum_pg >=  ?8 ", nps.getFinalIndexedQuery());
 		Assert.assertEquals("Jo%", nps.getFinalParams().get(7));
 
 		Assert.assertEquals(2, no);
 
-		nps = new NamedParameterStatement(sa)
+		nps = new NamedParameterStatement(connection)
 			.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
 				//.setParameter("edu", Arrays.asList(1, 2, 3))
 				//.setParameter("name", "Jo%")

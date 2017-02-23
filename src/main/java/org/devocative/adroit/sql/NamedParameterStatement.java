@@ -472,6 +472,7 @@ public class NamedParameterStatement {
 		switch (findDatabaseType()) {
 
 			case Oracle: // oracle records index starts from 1
+			case HSQLDB: // SET DATABASE SQL SYNTAX ORA TRUE
 				if (firstResult != null && maxResults != null) {
 					query = String.format(
 						"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg between :pg_first and :pg_last",
