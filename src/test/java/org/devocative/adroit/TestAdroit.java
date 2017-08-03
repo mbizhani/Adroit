@@ -7,6 +7,7 @@ import org.devocative.adroit.cache.LRUCache;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
+import org.devocative.adroit.sql.plugin.PaginationPlugin;
 import org.devocative.adroit.sql.plugin.SchemaPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
 import org.devocative.adroit.sql.result.ResultSetProcessor;
@@ -77,12 +78,11 @@ public class TestAdroit {
 				.setQuery("select -- test :this \n /* test :that from comment */ * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
 					//.setSchema(ConfigUtil.getString(true, "db.schema"))
 				.setParameter("edu", Arrays.asList(1, 2, 3))
-				.setParameter("name", "Jo%")
-				.setFirstResult(1L)
-			//.setMaxResults(10L)
-			;
+				.setParameter("name", "Jo%");
 
-		nps.addPlugin(new SchemaPlugin(ConfigUtil.getString(true, "db.schema")));
+		nps
+			.addPlugin(new SchemaPlugin(ConfigUtil.getString(true, "db.schema")))
+			.addPlugin(new PaginationPlugin(1L, null, PaginationPlugin.findDatabaseType(connection)));
 
 		int no = 0;
 		ResultSet rs = nps.executeQuery();
@@ -108,9 +108,8 @@ public class TestAdroit {
 				//.setParameter("edu", Arrays.asList(1, 2, 3))
 				//.setParameter("name", "Jo%")
 			.setIgnoreMissedParam(true)
-//			.setFirstResult(1L)
-			.setMaxResults(10L)
 		;
+		nps.addPlugin(new PaginationPlugin(null, 10L, PaginationPlugin.findDatabaseType(connection)));
 
 		no = 0;
 		rs = nps.executeQuery();

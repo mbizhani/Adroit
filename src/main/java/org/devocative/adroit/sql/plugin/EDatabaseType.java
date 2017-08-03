@@ -1,7 +1,7 @@
-package org.devocative.adroit.sql;
+package org.devocative.adroit.sql.plugin;
 
 // ------------------- Enum -------------------
-enum EDatabaseType {
+public enum EDatabaseType {
 	Oracle("oracledriver", "jdbc:oracle"),
 	MySql("mysql", "jdbc:mysql"),
 	HSQLDB("hsqldb", "jdbc:hsqldb"),

@@ -43,7 +43,6 @@ public class NamedParameterStatement {
 	private String query;
 	private String finalQuery;
 	private String finalIndexedQuery;
-	//private String schema;
 	private String id;
 
 	private Connection connection;
@@ -53,26 +52,18 @@ public class NamedParameterStatement {
 	private long totalBatchCount = 0, batchCount = 0;
 	private Integer fetchSize, queryTimeout, maxRows;
 
-	private Long firstResult, maxResults;
-	private EDatabaseType databaseType;
-
 	private List<INpsPlugin> plugins = new ArrayList<>();
 
 	// ------------------------------ CONSTRUCTORS
 
 	public NamedParameterStatement(Connection connection) {
-		this(connection, null, null);
-	}
-
-	public NamedParameterStatement(Connection connection, String query) {
-		this(connection, query, null);
+		this(connection, null);
 	}
 
 	// Main Constructor
-	public NamedParameterStatement(Connection connection, String query, String schema) {
+	public NamedParameterStatement(Connection connection, String query) {
 		this.connection = connection;
 		this.query = query;
-		//this.schema = schema;
 	}
 
 	// ------------------------------ UTIL METHODS
@@ -110,15 +101,6 @@ public class NamedParameterStatement {
 		this.query = query;
 		return this;
 	}
-
-	/*public String getSchema() {
-		return schema;
-	}
-
-	public NamedParameterStatement setSchema(String schema) {
-		this.schema = schema;
-		return this;
-	}*/
 
 	public String getId() {
 		return id;
@@ -199,21 +181,6 @@ public class NamedParameterStatement {
 		return connection;
 	}
 
-	public NamedParameterStatement setFirstResult(Long firstResult) {
-		this.firstResult = firstResult;
-		return this;
-	}
-
-	public NamedParameterStatement setMaxResults(Long maxResults) {
-		this.maxResults = maxResults;
-		return this;
-	}
-
-	public NamedParameterStatement setDatabaseType(EDatabaseType databaseType) {
-		this.databaseType = databaseType;
-		return this;
-	}
-
 	public NamedParameterStatement setIgnoreExtraPassedParam(boolean ignoreExtraPassedParam) {
 		this.ignoreExtraPassedParam = ignoreExtraPassedParam;
 		return this;
@@ -232,7 +199,6 @@ public class NamedParameterStatement {
 	}
 
 	public ResultSet executeQuery() throws SQLException {
-		applyPagination();
 		processQuery();
 		applyAllParams();
 		return preparedStatement.executeQuery();
@@ -304,6 +270,10 @@ public class NamedParameterStatement {
 		String queryByPlugin = query;
 		for (INpsPlugin plugin : plugins) {
 			queryByPlugin = plugin.process(queryByPlugin, params);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Apply plugin: name=[{}] query=[{}] params={}",
+					plugin.getClass().getSimpleName(), queryByPlugin, params);
+			}
 		}
 
 		Matcher matcher = PARAM_PATTERN.matcher(queryByPlugin);
@@ -443,87 +413,5 @@ public class NamedParameterStatement {
 		}
 		preparedStatement.setObject(index, val);
 		finalParams.put(index, val);
-	}
-
-	private void applyPagination() {
-		if (preparedStatement != null || (firstResult == null && maxResults == null)) {
-			return;
-		}
-
-		if (query == null) {
-			throw new RuntimeException("Invalid NamedParameterStatement: no query!");
-		}
-
-		if (firstResult != null && firstResult < 1) {
-			throw new RuntimeException("Invalid 'firstResult' value, must be greater than zero: " + firstResult);
-		}
-
-		if (maxResults != null && maxResults < 1) {
-			throw new RuntimeException("Invalid 'maxResults' value, must be greater than zero: " + maxResults);
-		}
-
-		switch (findDatabaseType()) {
-
-			case Oracle: // oracle records index starts from 1
-			case HSQLDB: // SET DATABASE SQL SYNTAX ORA TRUE
-				if (firstResult != null && maxResults != null) {
-					query = String.format(
-						"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg between :pg_first and :pg_last",
-						query);
-					params.put("pg_first", firstResult);
-					params.put("pg_last", firstResult + maxResults - 1);
-				} else if (firstResult != null) {
-					query = String.format(
-						"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg >= :pg_first",
-						query);
-					params.put("pg_first", firstResult);
-				} else {
-					query = String.format(
-						"select * from (select a.*, rownum rnum_pg from ( %s ) a) where rnum_pg <= :pg_last",
-						query);
-					params.put("pg_last", maxResults);
-				}
-				break;
-
-			case MySql: // mysql records index starts from 0
-				if (firstResult != null && maxResults != null) {
-					query = String.format("%s limit :pg_first,:pg_size", query);
-					params.put("pg_first", firstResult - 1);
-					params.put("pg_size", maxResults);
-				} else if (firstResult != null) {
-					query = String.format("%s limit :pg_first,:pg_size", query);
-					params.put("pg_first", firstResult - 1);
-					params.put("pg_size", Long.MAX_VALUE);
-				} else {
-					query = String.format("%s limit :pg_size", query);
-					params.put("pg_size", maxResults);
-				}
-				break;
-
-			case Unknown:
-				logger.error("Unknown database type for pagination");
-				break;
-		}
-	}
-
-	private EDatabaseType findDatabaseType() {
-		if (databaseType != null) {
-			return databaseType;
-		}
-
-		EDatabaseType result = EDatabaseType.Unknown;
-		try {
-			String driverName = connection.getMetaData().getDriverName().toLowerCase();
-			String url = connection.getMetaData().getURL().toLowerCase();
-			for (EDatabaseType type : EDatabaseType.values()) {
-				if (driverName.contains(type.getDriverHint()) || url.contains(type.getUrlHint())) {
-					result = type;
-					break;
-				}
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-		return result;
 	}
 }
