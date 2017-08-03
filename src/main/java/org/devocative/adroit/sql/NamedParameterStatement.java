@@ -1,5 +1,6 @@
 package org.devocative.adroit.sql;
 
+import org.devocative.adroit.sql.plugin.INpsPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,12 +15,6 @@ import java.util.regex.Pattern;
 
 public class NamedParameterStatement {
 	private static final Logger logger = LoggerFactory.getLogger(NamedParameterStatement.class);
-	private static final Set<String> KEYWORDS = new HashSet<>();
-
-	static {
-		KEYWORDS.add("set");
-		KEYWORDS.add("dual");
-	}
 
 	/*
 	Patterns to ignore:
@@ -35,9 +30,6 @@ public class NamedParameterStatement {
 	*/
 	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|[:]([\\w\\d_]+)");
 	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|([?])");
-	private static final Pattern SCHEMA_PATTERN = Pattern.compile(
-		"(['].*?['])|([\"].*?[\"])|(--.*?\\n)|(/[*].*?[*]/)|(extract[(].+?[)])|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)",
-		Pattern.CASE_INSENSITIVE);
 
 	// ------------------------------
 
@@ -51,7 +43,7 @@ public class NamedParameterStatement {
 	private String query;
 	private String finalQuery;
 	private String finalIndexedQuery;
-	private String schema;
+	//private String schema;
 	private String id;
 
 	private Connection connection;
@@ -63,6 +55,8 @@ public class NamedParameterStatement {
 
 	private Long firstResult, maxResults;
 	private EDatabaseType databaseType;
+
+	private List<INpsPlugin> plugins = new ArrayList<>();
 
 	// ------------------------------ CONSTRUCTORS
 
@@ -78,27 +72,10 @@ public class NamedParameterStatement {
 	public NamedParameterStatement(Connection connection, String query, String schema) {
 		this.connection = connection;
 		this.query = query;
-		this.schema = schema;
+		//this.schema = schema;
 	}
 
 	// ------------------------------ UTIL METHODS
-
-	public static String applySchema(String schema, String query) {
-		StringBuffer builder = new StringBuffer();
-		Matcher matcher = SCHEMA_PATTERN.matcher(query);
-		while (matcher.find()) {
-			if (matcher.group(6) != null && matcher.group(7) != null) {
-				String replacement;
-				if (matcher.group(7).contains(".") || KEYWORDS.contains(matcher.group(7).toLowerCase()))
-					replacement = String.format("%s %s", matcher.group(6), matcher.group(7));
-				else
-					replacement = String.format("%s %s.%s", matcher.group(6), schema, matcher.group(7));
-				matcher.appendReplacement(builder, replacement);
-			}
-		}
-		matcher.appendTail(builder);
-		return builder.toString();
-	}
 
 	public static List<String> findParamsInQuery(String query, boolean changeToLower) {
 		List<String> result = new ArrayList<>();
@@ -134,14 +111,14 @@ public class NamedParameterStatement {
 		return this;
 	}
 
-	public String getSchema() {
+	/*public String getSchema() {
 		return schema;
 	}
 
 	public NamedParameterStatement setSchema(String schema) {
 		this.schema = schema;
 		return this;
-	}
+	}*/
 
 	public String getId() {
 		return id;
@@ -249,6 +226,11 @@ public class NamedParameterStatement {
 
 	// ------------------------------ PUBLIC METHODS
 
+	public NamedParameterStatement addPlugin(INpsPlugin plugin) {
+		plugins.add(plugin);
+		return this;
+	}
+
 	public ResultSet executeQuery() throws SQLException {
 		applyPagination();
 		processQuery();
@@ -319,7 +301,12 @@ public class NamedParameterStatement {
 		logger.debug("Orig Query: {}", query);
 		StringBuffer builder = new StringBuffer();
 
-		Matcher matcher = PARAM_PATTERN.matcher(query);
+		String queryByPlugin = query;
+		for (INpsPlugin plugin : plugins) {
+			queryByPlugin = plugin.process(queryByPlugin, params);
+		}
+
+		Matcher matcher = PARAM_PATTERN.matcher(queryByPlugin);
 		int noOfParams = 0;
 		while (matcher.find()) {
 			if (matcher.group(4) != null) {
@@ -346,10 +333,6 @@ public class NamedParameterStatement {
 		}
 		matcher.appendTail(builder);
 		finalQuery = builder.toString();
-
-		if (schema != null && schema.length() > 0) {
-			finalQuery = applySchema(schema, finalQuery);
-		}
 
 		logger.debug("Final SQL: {}", finalQuery);
 		logger.debug("Number of params: {}", noOfParams);

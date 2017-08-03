@@ -7,6 +7,7 @@ import org.devocative.adroit.cache.LRUCache;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
+import org.devocative.adroit.sql.plugin.SchemaPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
 import org.devocative.adroit.sql.result.ResultSetProcessor;
 import org.devocative.adroit.vo.DateFieldVO;
@@ -74,12 +75,14 @@ public class TestAdroit {
 		NamedParameterStatement nps =
 			new NamedParameterStatement(connection)
 				.setQuery("select -- test :this \n /* test :that from comment */ * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
-				.setSchema(ConfigUtil.getString(true, "db.schema"))
+					//.setSchema(ConfigUtil.getString(true, "db.schema"))
 				.setParameter("edu", Arrays.asList(1, 2, 3))
 				.setParameter("name", "Jo%")
 				.setFirstResult(1L)
 			//.setMaxResults(10L)
 			;
+
+		nps.addPlugin(new SchemaPlugin(ConfigUtil.getString(true, "db.schema")));
 
 		int no = 0;
 		ResultSet rs = nps.executeQuery();
@@ -174,7 +177,7 @@ public class TestAdroit {
 				"join qaz.Asset ast on eq.vrAsset = ast.id\n" +
 				"join qaz.Item item on ast.vrPhysicalItem = item.id";
 
-		String result = NamedParameterStatement.applySchema("qaz", q);
+		String result = SchemaPlugin.applySchema("qaz", q);
 
 		Assert.assertEquals(expected, result);
 	}
