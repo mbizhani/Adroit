@@ -7,6 +7,9 @@ import org.devocative.adroit.cache.LRUCache;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
+import org.devocative.adroit.sql.filter.FilterType;
+import org.devocative.adroit.sql.filter.FilterValue;
+import org.devocative.adroit.sql.plugin.FilterPlugin;
 import org.devocative.adroit.sql.plugin.PaginationPlugin;
 import org.devocative.adroit.sql.plugin.SchemaPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
@@ -49,6 +52,8 @@ public class TestAdroit {
 		connection = initDB.getConnection();
 	}
 
+	// ---------------
+
 	@Test
 	public void testExcelExporter() throws IOException {
 		File testFile = new File("test.xlsx");
@@ -71,6 +76,8 @@ public class TestAdroit {
 		Assert.assertTrue(testFile.exists());
 	}
 
+	// ---------------
+
 	@Test
 	public void testNPS() throws Exception {
 		NamedParameterStatement nps =
@@ -81,8 +88,9 @@ public class TestAdroit {
 				.setParameter("name", "Jo%");
 
 		nps
+			.addPlugin(new PaginationPlugin(1L, null, PaginationPlugin.findDatabaseType(connection)))
 			.addPlugin(new SchemaPlugin(ConfigUtil.getString(true, "db.schema")))
-			.addPlugin(new PaginationPlugin(1L, null, PaginationPlugin.findDatabaseType(connection)));
+		;
 
 		int no = 0;
 		ResultSet rs = nps.executeQuery();
@@ -180,6 +188,69 @@ public class TestAdroit {
 
 		Assert.assertEquals(expected, result);
 	}
+
+	@Test
+	public void testFilterOfNPS() throws SQLException {
+		// --------------- CONTAINS NO CASE
+		ResultSet rs =
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("c_name", new FilterValue("ja%", FilterType.ContainNoCase))
+				).executeQuery();
+		List<Object> rows = new ArrayList<>();
+		ResultSetProcessor.processRowAsList(rs, rows::add);
+		Assert.assertEquals(2, rows.size());
+
+		// --------------- CONTAINS CASE
+		rs =
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("c_name", new FilterValue("%o%", FilterType.ContainCase))
+				).executeQuery();
+		rows = new ArrayList<>();
+		ResultSetProcessor.processRowAsList(rs, rows::add);
+		Assert.assertEquals(2, rows.size());
+
+		// --------------- RANGE
+		rs =
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("d_birth_date", new FilterValue(
+							CalendarUtil.getDate(new DateFieldVO(2008, 1, 1)),
+							CalendarUtil.getDate(new DateFieldVO(2009, 1, 1)),
+							FilterType.Range))
+				).executeQuery();
+		rows = new ArrayList<>();
+		ResultSetProcessor.processRowAsList(rs, rows::add);
+		Assert.assertEquals(1, rows.size());
+
+		// --------------- LIST
+		rs =
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("f_education", new FilterValue(Arrays.asList(2, 4, 6, 8), FilterType.Equal))
+				).executeQuery();
+		rows = new ArrayList<>();
+		ResultSetProcessor.processRowAsList(rs, rows::add);
+		Assert.assertEquals(2, rows.size());
+
+		// --------------- EMBEDDED FILTER
+		rs =
+			new NamedParameterStatement(connection, "select * from t_person where 1=1 %FILTER_EXPR%")
+				.addPlugin(
+					new FilterPlugin()
+						.add("f_education", new FilterValue(Arrays.asList(2, 4, 6, 8), FilterType.Equal))
+				).executeQuery();
+		rows = new ArrayList<>();
+		ResultSetProcessor.processRowAsList(rs, rows::add);
+		Assert.assertEquals(2, rows.size());
+	}
+
+	// ---------------
 
 	@Test
 	public void testConfigUtil() {
@@ -300,6 +371,8 @@ public class TestAdroit {
 		Assert.assertEquals(map1, map3);
 	}
 
+	// ---------------
+
 	@Test
 	public void testCalendar() {
 		List<Thread> threads = new ArrayList<>();
@@ -371,6 +444,8 @@ public class TestAdroit {
 		Assert.assertNotEquals(0, dateField.getMonth());
 		Assert.assertNotEquals(0, dateField.getDay());
 	}
+
+	// ---------------
 
 	@Test
 	public void testObjectUtil() {
@@ -544,6 +619,8 @@ public class TestAdroit {
 		bax2 = (BeanAndXml) xStream.fromXML(xml);
 		Assert.assertTrue(bax2.equals(bax));
 	}
+
+	// ---------------
 
 	@Test
 	public void testRSProcessorList() throws SQLException {
