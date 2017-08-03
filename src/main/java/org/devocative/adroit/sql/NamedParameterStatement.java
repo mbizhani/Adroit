@@ -262,6 +262,12 @@ public class NamedParameterStatement {
 		return preparedStatement.executeUpdate();
 	}
 
+	public boolean execute() throws SQLException {
+		processQuery();
+		applyAllParams();
+		return preparedStatement.execute();
+	}
+
 	public void addBatch() throws SQLException {
 		processQuery();
 		applyAllParams();
@@ -288,6 +294,10 @@ public class NamedParameterStatement {
 		hasBatch = false;
 		batchCount = 0;
 		logger.debug("Execute Batch [{}], count={}", id, batchCount);
+	}
+
+	public ResultSet getResultSet() throws SQLException {
+		return preparedStatement.getResultSet();
 	}
 
 	public void close() throws SQLException {

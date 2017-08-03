@@ -7,6 +7,8 @@ import org.devocative.adroit.cache.LRUCache;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
+import org.devocative.adroit.sql.result.EColumnNameCase;
+import org.devocative.adroit.sql.result.ResultSetProcessor;
 import org.devocative.adroit.vo.DateFieldVO;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.adroit.xml.AdroitXStream;
@@ -20,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class TestAdroit {
@@ -538,6 +541,32 @@ public class TestAdroit {
 
 		bax2 = (BeanAndXml) xStream.fromXML(xml);
 		Assert.assertTrue(bax2.equals(bax));
+	}
+
+	@Test
+	public void testRSProcessorList() throws SQLException {
+		NamedParameterStatement nps = new NamedParameterStatement(connection, "select * from t_person");
+
+		if (nps.execute()) {
+			ResultSet rs = nps.getResultSet();
+			List<List<Object>> rows = new ArrayList<>();
+			ResultSetProcessor.processRowAsList(rs, rows::add);
+			Assert.assertEquals(4, rows.size());
+			System.out.println("rows = " + rows);
+		}
+	}
+
+	@Test
+	public void testRSProcessorMap() throws SQLException {
+		NamedParameterStatement nps = new NamedParameterStatement(connection, "select * from t_person");
+
+		if (nps.execute()) {
+			ResultSet rs = nps.getResultSet();
+			List<Map<String, Object>> rows = new ArrayList<>();
+			ResultSetProcessor.processRowAsMap(rs, rows::add, EColumnNameCase.LOWER);
+			Assert.assertEquals(4, rows.size());
+			System.out.println("rows = " + rows);
+		}
 	}
 
 	// ------------------------------

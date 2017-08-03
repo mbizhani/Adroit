@@ -23,9 +23,9 @@ INSERT INTO t_education (id, c_name) VALUES (2, 'BS');
 INSERT INTO t_education (id, c_name) VALUES (3, 'MS');
 INSERT INTO t_education (id, c_name) VALUES (4, 'PhD');
 
-INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (1, 'Jack', NULL, 1);
-INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (2, 'Joe', NULL, 2);
-INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (3, 'John', NULL, 3);
-INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (4, 'James', NULL, 4);
+INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (1, 'Jack', TIMESTAMP '2009-08-01 20:08:08', 1);
+INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (2, 'Joe', TIMESTAMP '2000-04-08 20:08:08', 2);
+INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (3, 'John', TIMESTAMP '1995-09-18 20:08:08', 3);
+INSERT INTO t_person (id, c_name, d_birth_date, f_education) VALUES (4, 'James', TIMESTAMP '2008-11-28 20:08:08', 4);
 
 SET DATABASE SQL SYNTAX ORA TRUE;
