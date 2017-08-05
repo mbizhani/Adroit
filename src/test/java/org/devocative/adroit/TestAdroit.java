@@ -13,6 +13,7 @@ import org.devocative.adroit.sql.plugin.FilterPlugin;
 import org.devocative.adroit.sql.plugin.PaginationPlugin;
 import org.devocative.adroit.sql.plugin.SchemaPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
+import org.devocative.adroit.sql.result.QueryVO;
 import org.devocative.adroit.sql.result.ResultSetProcessor;
 import org.devocative.adroit.vo.DateFieldVO;
 import org.devocative.adroit.vo.KeyValueVO;
@@ -240,7 +241,7 @@ public class TestAdroit {
 
 		// --------------- EMBEDDED FILTER
 		rs =
-			new NamedParameterStatement(connection, "select * from t_person where 1=1 %FILTER_EXPR%")
+			new NamedParameterStatement(connection, "select * from t_person where 1=1 %FILTER% order by c_name")
 				.addPlugin(
 					new FilterPlugin()
 						.add("f_education", new FilterValue(Arrays.asList(2, 4, 6, 8), FilterType.Equal))
@@ -645,6 +646,18 @@ public class TestAdroit {
 			ResultSetProcessor.processRowAsMap(rs, rows::add, EColumnNameCase.LOWER);
 			Assert.assertEquals(4, rows.size());
 			System.out.println("rows = " + rows);
+		}
+	}
+
+	@Test
+	public void testRSProcessor() throws SQLException {
+		NamedParameterStatement nps = new NamedParameterStatement(connection, "select * from t_person");
+
+		if (nps.execute()) {
+			ResultSet rs = nps.getResultSet();
+			QueryVO rvo = ResultSetProcessor.process(rs, EColumnNameCase.LOWER);
+			Assert.assertEquals(4, rvo.getHeader().size());
+			Assert.assertEquals(4, rvo.getRows().size());
 		}
 	}
 

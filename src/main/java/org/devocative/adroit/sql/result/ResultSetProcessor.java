@@ -12,7 +12,10 @@ import java.util.Map;
 public class ResultSetProcessor {
 
 	public static void processRowAsList(ResultSet rs, IRowAsList asList) throws SQLException {
-		ResultSetMetaData metaData = rs.getMetaData();
+		processRowAsList(rs, rs.getMetaData(), asList);
+	}
+
+	public static void processRowAsList(ResultSet rs, ResultSetMetaData metaData, IRowAsList asList) throws SQLException {
 		int size = metaData.getColumnCount();
 
 		while (rs.next()) {
@@ -25,7 +28,10 @@ public class ResultSetProcessor {
 	}
 
 	public static void processRowAsMap(ResultSet rs, IRowAsMap asMap, EColumnNameCase nameCase) throws SQLException {
-		ResultSetMetaData metaData = rs.getMetaData();
+		processRowAsMap(rs, rs.getMetaData(), asMap, nameCase);
+	}
+
+	public static void processRowAsMap(ResultSet rs, ResultSetMetaData metaData, IRowAsMap asMap, EColumnNameCase nameCase) throws SQLException {
 		int size = metaData.getColumnCount();
 
 		while (rs.next()) {
@@ -46,6 +52,28 @@ public class ResultSetProcessor {
 		}
 	}
 
+	public static QueryVO process(ResultSet rs, EColumnNameCase nameCase) throws SQLException {
+		ResultSetMetaData metaData = rs.getMetaData();
+		QueryVO result = new QueryVO();
+
+		for (int i = 1; i <= metaData.getColumnCount(); i++) {
+			String colName = metaData.getColumnName(i);
+			switch (nameCase) {
+				case LOWER:
+					colName = colName.toLowerCase();
+					break;
+				case UPPER:
+					colName = colName.toUpperCase();
+					break;
+			}
+			result.addHeader(colName);
+		}
+
+		processRowAsList(rs, metaData, result::addRow);
+
+		return result;
+	}
+
 	public static Object getValue(ResultSet rs, ResultSetMetaData metaData, int colIndex) throws SQLException {
 		Object value;
 		switch (metaData.getColumnType(colIndex)) {
@@ -63,5 +91,4 @@ public class ResultSetProcessor {
 		}
 		return value;
 	}
-
 }

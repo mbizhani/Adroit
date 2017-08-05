@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FilterPlugin implements INpsPlugin {
-	public static final String EMBED_FILTER_EXPRESSION = "%FILTER_EXPR%";
+	public static final String EMBED_FILTER_EXPRESSION = "%FILTER%";
 
 	private Map<String, FilterValue> filter;
 
@@ -29,11 +29,20 @@ public class FilterPlugin implements INpsPlugin {
 		return this;
 	}
 
+	public FilterPlugin addAll(Map<String, Object> filter) {
+		for (Map.Entry<String, Object> entry : filter.entrySet()) {
+			if (entry.getValue() instanceof String) {
+				add(entry.getKey(), new FilterValue(String.format("%%%s%%", entry.getValue()), FilterType.ContainNoCase));
+			} else {
+				add(entry.getKey(), new FilterValue(entry.getValue(), FilterType.Equal));
+			}
+		}
+		return this;
+	}
+
 	@Override
 	public String process(String query, Map<String, Object> params) {
-
 		if (!filter.isEmpty()) {
-
 			StringBuilder filterBuilder = new StringBuilder();
 			for (Map.Entry<String, FilterValue> entry : filter.entrySet()) {
 				String filter = entry.getKey();
@@ -88,7 +97,7 @@ public class FilterPlugin implements INpsPlugin {
 
 			return String.format("select * from ( %s ) where 1=1\n%s", query, filterBuilder.toString());
 		} else if (query.contains(EMBED_FILTER_EXPRESSION)) {
-			return query.replace(EMBED_FILTER_EXPRESSION, "1=1");
+			return query.replace(EMBED_FILTER_EXPRESSION, "");
 		}
 
 		return query;

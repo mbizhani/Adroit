@@ -167,8 +167,10 @@ public class NamedParameterStatement {
 	}
 
 	public NamedParameterStatement setParameters(Map<String, Object> params) {
-		for (Map.Entry<String, Object> param : params.entrySet()) {
-			this.params.put(param.getKey().toLowerCase(), param.getValue());
+		if (params != null) {
+			for (Map.Entry<String, Object> param : params.entrySet()) {
+				this.params.put(param.getKey().toLowerCase(), param.getValue());
+			}
 		}
 		return this;
 	}
@@ -246,6 +248,10 @@ public class NamedParameterStatement {
 
 	public ResultSet getResultSet() throws SQLException {
 		return preparedStatement.getResultSet();
+	}
+
+	public int getUpdateCount() throws SQLException {
+		return preparedStatement.getUpdateCount();
 	}
 
 	public void close() throws SQLException {
