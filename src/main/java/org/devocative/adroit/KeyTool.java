@@ -7,7 +7,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
+import java.security.Provider;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.spec.KeySpec;
 
 public class KeyTool {
@@ -31,5 +33,25 @@ public class KeyTool {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static void list() {
+		for (Provider provider : Security.getProviders()) {
+			System.out.println(provider.getName());
+		}
+		System.out.println("=====================================");
+		System.out.println("=====================================");
+		System.out.println("=====================================");
+		for (Provider provider : Security.getProviders()) {
+			System.out.println(provider.getName());
+			for (String key : provider.stringPropertyNames()) {
+				System.out.println("\t" + key + "\t" + provider.getProperty(key));
+			}
+			System.out.println("-------------------------");
+		}
+	}
+
+	public static void main(String[] args) {
+		list();
 	}
 }
