@@ -44,7 +44,7 @@ public class TestAdroit {
 		initDB
 			.setDriver(ConfigUtil.getString(true, "db.driver"))
 			.setUrl(ConfigUtil.getString(true, "db.url"))
-			.setPassword(ConfigUtil.getString(true, "db.username"))
+			.setUsername(ConfigUtil.getString(true, "db.username"))
 			.setPassword(ConfigUtil.getString("db.password", ""))
 			.addScript("src/test/resources/init_hsql.sql");
 

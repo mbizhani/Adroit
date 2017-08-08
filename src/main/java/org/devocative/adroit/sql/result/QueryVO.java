@@ -2,9 +2,7 @@ package org.devocative.adroit.sql.result;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class QueryVO implements Serializable {
 	private static final long serialVersionUID = 7622836172393602198L;
@@ -32,10 +30,10 @@ public class QueryVO implements Serializable {
 
 	// ---------------
 
-	public List<Map<String, Object>> toListOfMap() {
-		List<Map<String, Object>> list = new ArrayList<>();
+	public List<RowVO> toListOfMap() {
+		List<RowVO> list = new ArrayList<>();
 		for (List<Object> row : rows) {
-			Map<String, Object> rowAsMap = new LinkedHashMap<>();
+			RowVO rowAsMap = new RowVO();
 			for (int i = 0; i < header.size(); i++) {
 				rowAsMap.put(header.get(i), row.get(i));
 			}
