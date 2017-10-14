@@ -218,6 +218,10 @@ public final class ConfigUtil {
 		return PROPERTIES.containsKey(configKey.getKey());
 	}
 
+	public static boolean keyHasValue(IConfigKey configKey) {
+		return PROPERTIES.containsKey(configKey.getKey()) || configKey.getDefaultValue() != null;
+	}
+
 	public static void write() {
 		try {
 			write(new File(ConfigUtil.class.getResource("/config.properties").toURI()));
