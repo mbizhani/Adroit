@@ -5,7 +5,10 @@ import java.util.List;
 
 public enum TestConfigKey implements IConfigKey {
 	OK(true, "int.key", Arrays.asList(123, 234, 356)),
-	NOK(true, "test.choices", Arrays.asList("ok", "nok"));
+	NOK(true, "test.choices", Arrays.asList("ok", "nok")),
+	IntDefaultNull("test.int.default.null", null, null),
+	LongDefaultNull("test.long.default.null", null, null),
+	BooleanDefaultNull("test.boolean.default.null", null, null);
 
 	private String key;
 	private boolean validate = false;

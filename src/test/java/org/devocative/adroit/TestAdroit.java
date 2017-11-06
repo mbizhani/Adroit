@@ -259,6 +259,10 @@ public class TestAdroit {
 
 		Assert.assertTrue(123 == ConfigUtil.getInteger(TestConfigKey.OK));
 
+		Assert.assertNull(ConfigUtil.getInteger(TestConfigKey.IntDefaultNull));
+		Assert.assertNull(ConfigUtil.getInteger(TestConfigKey.LongDefaultNull));
+		Assert.assertNull(ConfigUtil.getInteger(TestConfigKey.BooleanDefaultNull));
+
 		Assert.assertTrue(ConfigUtil.getBoolean(true, "bool.key"));
 
 		Assert.assertEquals(987654321L, ConfigUtil.getLong(true, "long.key").longValue());
@@ -275,6 +279,9 @@ public class TestAdroit {
 		} catch (Exception e) {
 			Assert.assertTrue(true);
 		}
+
+		Assert.assertTrue(ConfigUtil.keyHasValue(TestConfigKey.NOK));
+		Assert.assertFalse(ConfigUtil.keyHasValidValue(TestConfigKey.NOK));
 
 		try {
 			ConfigUtil.getString(TestConfigKey.NOK);

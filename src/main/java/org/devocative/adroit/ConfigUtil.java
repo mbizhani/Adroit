@@ -75,7 +75,7 @@ public final class ConfigUtil {
 		return Boolean.valueOf(getString(validate, key));
 	}
 
-	public static Boolean getBoolean(String key, boolean defaultValue) {
+	public static Boolean getBoolean(String key, Boolean defaultValue) {
 		try {
 			return getString(false, key) != null ? Boolean.valueOf(getString(false, key)) : defaultValue;
 		} catch (Exception e) {
@@ -99,7 +99,7 @@ public final class ConfigUtil {
 		return Integer.valueOf(getString(validate, key));
 	}
 
-	public static Integer getInteger(String key, int defaultValue) {
+	public static Integer getInteger(String key, Integer defaultValue) {
 		try {
 			return getString(false, key) != null ? Integer.valueOf(getString(false, key)) : defaultValue;
 		} catch (Exception e) {
@@ -123,7 +123,7 @@ public final class ConfigUtil {
 		return Long.valueOf(getString(validate, key));
 	}
 
-	public static Long getLong(String key, long defaultValue) {
+	public static Long getLong(String key, Long defaultValue) {
 		try {
 			return getString(false, key) != null ? Long.valueOf(getString(false, key)) : defaultValue;
 		} catch (Exception e) {
@@ -222,6 +222,16 @@ public final class ConfigUtil {
 		return PROPERTIES.containsKey(configKey.getKey()) || configKey.getDefaultValue() != null;
 	}
 
+	public static boolean keyHasValidValue(IConfigKey configKey) {
+		if (PROPERTIES.containsKey(configKey.getKey())) {
+			String val = PROPERTIES.getProperty(configKey.getKey());
+			return val != null && val.trim().length() > 0 &&
+				(configKey.getPossibleValues() == null || configKey.getPossibleValues().contains(val));
+		}
+
+		return configKey.getDefaultValue() != null;
+	}
+
 	public static void write() {
 		try {
 			write(new File(ConfigUtil.class.getResource("/config.properties").toURI()));
@@ -255,7 +265,7 @@ public final class ConfigUtil {
 			reader.close();
 
 			FileWriter writer = new FileWriter(file);
-			writer.write(String.format("# Write Method: %s\n\n", CalendarUtil.toPersian(new Date(), "yyyy/MM/dd HH:mm:ss")));
+			writer.write(String.format("# Write Method: %s\n\n", CalendarUtil.formatDate(new Date(), "yyyy/MM/dd HH:mm:ss")));
 			for (String l : lines) {
 				writer.write(l);
 				writer.write("\n");
