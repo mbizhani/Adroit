@@ -33,8 +33,8 @@ public class NamedParameterStatement {
 
 	// ------------------------------
 
-	private Map<String, List<Integer>> paramsPlacement = new HashMap<>();
-	private Map<String, Object> params = new HashMap<>();
+	private Map<String, List<Integer>> paramsPlacement = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Object> params = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<Integer, Object> finalParams = new LinkedHashMap<>();
 
 	private boolean hasBatch = false;
@@ -157,19 +157,19 @@ public class NamedParameterStatement {
 	}
 
 	public NamedParameterStatement addOrReplaceParameter(String name, Object value) {
-		params.put(name.toLowerCase(), value);
+		params.put(name, value);
 		return this;
 	}
 
 	public NamedParameterStatement setParameter(String name, Object value) {
-		params.put(name.toLowerCase(), value);
+		params.put(name, value);
 		return this;
 	}
 
 	public NamedParameterStatement setParameters(Map<String, Object> params) {
 		if (params != null) {
 			for (Map.Entry<String, Object> param : params.entrySet()) {
-				this.params.put(param.getKey().toLowerCase(), param.getValue());
+				this.params.put(param.getKey(), param.getValue());
 			}
 		}
 		return this;
@@ -287,10 +287,10 @@ public class NamedParameterStatement {
 		while (matcher.find()) {
 			if (matcher.group(4) != null) {
 				noOfParams++;
-				String param = matcher.group(4).toLowerCase();
+				String param = matcher.group(4);
 				logger.debug("Param: {}", param);
 				if (!paramsPlacement.containsKey(param)) {
-					paramsPlacement.put(param, new ArrayList<Integer>());
+					paramsPlacement.put(param, new ArrayList<>());
 				}
 				paramsPlacement.get(param).add(noOfParams);
 

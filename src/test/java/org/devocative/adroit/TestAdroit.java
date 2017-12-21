@@ -197,7 +197,7 @@ public class TestAdroit {
 			new NamedParameterStatement(connection, "select * from t_person")
 				.addPlugin(
 					new FilterPlugin()
-						.add("c_name", new FilterValue("ja%", FilterType.ContainNoCase))
+						.add("C_NAME", new FilterValue("ja%", FilterType.ContainNoCase))
 				).executeQuery();
 		List<Object> rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
@@ -208,7 +208,7 @@ public class TestAdroit {
 			new NamedParameterStatement(connection, "select * from t_person")
 				.addPlugin(
 					new FilterPlugin()
-						.add("c_name", new FilterValue("%o%", FilterType.ContainCase))
+						.add("C_Name", new FilterValue("%o%", FilterType.ContainCase))
 				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
