@@ -236,14 +236,18 @@ public class NamedParameterStatement {
 		return hasBatch;
 	}
 
-	public void executeBatch() throws SQLException {
+	public int[] executeBatch() throws SQLException {
+		int[] result = null;
+
 		processQuery();
 		if (hasBatch) {
-			preparedStatement.executeBatch();
+			result = preparedStatement.executeBatch();
 		}
 		hasBatch = false;
 		batchCount = 0;
 		logger.debug("Execute Batch [{}], count={}", id, batchCount);
+
+		return result;
 	}
 
 	public ResultSet getResultSet() throws SQLException {
@@ -255,8 +259,15 @@ public class NamedParameterStatement {
 	}
 
 	public void close() throws SQLException {
-		processQuery();
-		preparedStatement.close();
+		if (preparedStatement != null && !preparedStatement.isClosed()) {
+			preparedStatement.close();
+		}
+	}
+
+	public void cancel() throws SQLException {
+		if (preparedStatement != null && !preparedStatement.isClosed()) {
+			preparedStatement.cancel();
+		}
 	}
 
 	// ------------------------------ PRIVATE METHODS
