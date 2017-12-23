@@ -6,7 +6,7 @@
 
 	<groupId>org.devocative</groupId>
 	<artifactId>adroit</artifactId>
-	<version>1.5-SNAPSHOT</version>
+	<version>1.5</version>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -38,7 +38,7 @@
 		<connection>scm:git:https://github.com/mbizhani/Adroit.git</connection>
 		<developerConnection>scm:git:https://github.com/mbizhani/Adroit.git</developerConnection>
 		<url>https://github.com/mbizhani/Adroit.git</url>
-		<tag>HEAD</tag>
+		<tag>adroit-1.5</tag>
 	</scm>
 
 	<properties>
