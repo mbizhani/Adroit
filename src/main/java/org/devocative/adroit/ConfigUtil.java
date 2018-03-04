@@ -9,19 +9,29 @@ public final class ConfigUtil {
 	private static final Properties PROPERTIES = new Properties();
 	private static final List<IConfigKey> CONFIG_KEYS = new ArrayList<>();
 
+	// ------------------------------ Init
+
 	static {
-		load(ConfigUtil.class.getResourceAsStream("/config.properties"));
+		load(ConfigUtil.class.getResourceAsStream("/config.properties"), true);
 	}
 
 	public static void load(InputStream stream) {
+		load(stream, false);
+	}
+
+	private static void load(InputStream stream, boolean ignoreError) {
 		PROPERTIES.clear();
 
 		try {
-			PROPERTIES.load(stream);
-			stream.close();
+			if (stream != null) {
+				PROPERTIES.load(stream);
+				stream.close();
 
-			if (PROPERTIES.size() == 0) {
-				throw new RuntimeException("Empty [config.properties]!");
+				if (PROPERTIES.size() == 0 && !ignoreError) {
+					throw new RuntimeException("Empty [config.properties]!");
+				}
+			} else if (!ignoreError) {
+				throw new RuntimeException("Config file not found");
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Can't load [config.properties]!", e);

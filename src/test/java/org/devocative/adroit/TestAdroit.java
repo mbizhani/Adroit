@@ -40,6 +40,8 @@ public class TestAdroit {
 
 	@BeforeClass
 	public static void init() {
+		ConfigUtil.load(TestAdroit.class.getResourceAsStream("/config_test.properties"));
+
 		InitDB initDB = new InitDB();
 		initDB
 			.setDriver(ConfigUtil.getString(true, "db.driver"))
