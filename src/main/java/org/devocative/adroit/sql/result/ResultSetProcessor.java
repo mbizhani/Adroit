@@ -21,7 +21,7 @@ public class ResultSetProcessor {
 		while (rs.next()) {
 			List<Object> row = new ArrayList<>();
 			for (int i = 1; i <= size; i++) {
-				row.add(getValue(rs, metaData, i));
+				row.add(getValue(rs, i, metaData.getColumnType(i)));
 			}
 			asList.onRowResult(row);
 		}
@@ -46,7 +46,7 @@ public class ResultSetProcessor {
 						colName = colName.toUpperCase();
 						break;
 				}
-				row.put(colName, getValue(rs, metaData, i));
+				row.put(colName, getValue(rs, i, metaData.getColumnType(i)));
 			}
 			asMap.onRowResult(row);
 		}
@@ -74,9 +74,9 @@ public class ResultSetProcessor {
 		return result;
 	}
 
-	public static Object getValue(ResultSet rs, ResultSetMetaData metaData, int colIndex) throws SQLException {
+	public static Object getValue(ResultSet rs, int colIndex, int colType) throws SQLException {
 		Object value;
-		switch (metaData.getColumnType(colIndex)) {
+		switch (colType) {
 			case Types.DATE:
 				value = rs.getDate(colIndex);
 				break;
@@ -85,6 +85,9 @@ public class ResultSetProcessor {
 				break;
 			case Types.TIMESTAMP:
 				value = rs.getTimestamp(colIndex);
+				break;
+			case Types.CLOB:
+				value = rs.getString(colIndex);
 				break;
 			default:
 				value = rs.getObject(colIndex);
