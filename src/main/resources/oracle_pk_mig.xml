@@ -1,0 +1,62 @@
+<list>
+	<query name="pkList">
+		<sql><![CDATA[
+select
+	cn.table_name name,
+	cn.constraint_name pk_constraint,
+	col.column_name pk_column
+from
+	user_constraints cn
+	join user_cons_columns col on col.constraint_name = cn.constraint_name
+where
+	cn.constraint_type = 'P'
+	and cn.table_name in (:tables)
+]]></sql>
+	</query>
+
+	<query name="fkList">
+		<sql><![CDATA[
+select
+	src.table_name,
+	src.constraint_name cons_name,
+	src_col.column_name
+from user_constraints src
+	join user_constraints dest on dest.constraint_name = src.r_constraint_name
+	join user_cons_columns src_col on src_col.constraint_name = src.constraint_name
+where
+	src.constraint_type = 'R'
+	and dest.constraint_type = 'P'
+	and dest.table_name = :table
+]]></sql>
+	</query>
+
+	<query name="renameColumn">
+		<sql><![CDATA[
+alter table :table rename column :col_cur_name to :col_new_name
+]]></sql>
+	</query>
+
+	<query name="addColumn">
+		<sql><![CDATA[
+alter table :table add :col_name :col_type
+]]></sql>
+	</query>
+
+	<query name="dropCons">
+		<sql><![CDATA[
+alter table :table drop constraint :cons
+]]></sql>
+	</query>
+
+	<query name="addPkCons">
+		<sql><![CDATA[
+alter table :table add constraint :cons primary key (:col)
+]]></sql>
+	</query>
+
+	<query name="addFkCons">
+		<sql><![CDATA[
+alter table :table add constraint :cons foreign key (:col) references :dest_table
+]]></sql>
+	</query>
+</list>
