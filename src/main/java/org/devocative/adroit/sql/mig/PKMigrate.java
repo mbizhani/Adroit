@@ -23,7 +23,13 @@ public class PKMigrate {
 
 	// ------------------------------
 
-	public PKMigrate(Connection connection, String... tables) {
+	public static void migrate(Connection connection, String... tables) throws SQLException {
+		new PKMigrate(connection, tables).migrate();
+	}
+
+	// ------------------------------
+
+	private PKMigrate(Connection connection, String... tables) {
 		this.connection = connection;
 		helper = new SqlHelper(connection);
 		helper.setXMLQueryFile(PKMigrate.class.getResourceAsStream("/oracle_pk_mig.xml"));
@@ -37,7 +43,7 @@ public class PKMigrate {
 
 	// ------------------------------
 
-	public void migrate() throws SQLException {
+	private void migrate() throws SQLException {
 		QueryVO pk = helper.selectAll("pkList",
 			ObjectBuilder.<String, Object>createDefaultMap().put("tables", tables).get());
 		List<TablePkFkVO> tablePkFkVOs = pk.toBeans(TablePkFkVO.class);
@@ -57,7 +63,9 @@ public class PKMigrate {
 		}
 	}
 
-	public void migrateTable(TablePkFkVO table) throws SQLException {
+	// ------------------------------
+
+	private void migrateTable(TablePkFkVO table) throws SQLException {
 		logger.info("Migrating Table: {}", table.getName());
 
 		helper.executeDDL("renameColumn",
@@ -142,12 +150,17 @@ public class PKMigrate {
 				.put("table", refConsVO.getTableName())
 				.put("cons", refConsVO.getConsName())
 				.get());
+
+			dropOtherCons(refConsVO.getTableName(), "OLD_" + refConsVO.getColumnName());
 		}
 
 		helper.executeDDL("dropCons", ObjectBuilder.<String, Object>createDefaultMap()
 			.put("table", table.getName())
 			.put("cons", table.getPkConstraint())
 			.get());
+
+		dropOtherCons(table.getName(), "OLD_" + table.getPkColumn());
+
 
 		helper.executeDDL("addPkCons", ObjectBuilder.<String, Object>createDefaultMap()
 			.put("table", table.getName())
@@ -161,6 +174,19 @@ public class PKMigrate {
 				.put("cons", refConsVO.getConsName())
 				.put("col", refConsVO.getColumnName())
 				.put("dest_table", table.getName())
+				.get());
+		}
+	}
+
+	private void dropOtherCons(String table, String column) throws SQLException {
+		List<String> oldPkColConsList = helper.firstColAsList("allConsList", ObjectBuilder.<String, Object>createDefaultMap()
+			.put("table", table)
+			.put("col", column)
+			.get());
+		for (String oldPkColCons : oldPkColConsList) {
+			helper.executeDDL("dropCons", ObjectBuilder.<String, Object>createDefaultMap()
+				.put("table", table)
+				.put("cons", oldPkColCons)
 				.get());
 		}
 	}

@@ -30,6 +30,19 @@ where
 ]]></sql>
 	</query>
 
+	<query name="allConsList">
+		<sql><![CDATA[
+select
+	cons.constraint_name
+from
+	user_constraints cons
+	join user_cons_columns col on col.constraint_name = cons.constraint_name
+where
+	cons.table_name = :table
+	and col.column_name = :col
+]]></sql>
+	</query>
+
 	<query name="renameColumn">
 		<sql><![CDATA[
 alter table :table rename column :col_cur_name to :col_new_name
