@@ -46,42 +46,44 @@ public class FilterPlugin implements INpsPlugin {
 			StringBuilder filterBuilder = new StringBuilder();
 			for (Map.Entry<String, FilterValue> entry : filter.entrySet()) {
 				String filter = entry.getKey();
+				String filterParam = filter.replaceAll("[.]", "__");
+
 				FilterValue filterValue = entry.getValue();
 
 				switch (filterValue.getType()) {
 					case Equal:
 						if (filterValue.getValue() instanceof Collection) {
-							filterBuilder.append(String.format("\tand %1$s in (:%1$s)\n", filter));
+							filterBuilder.append(String.format("\tand %s in (:%s)\n", filter, filterParam));
 						} else {
-							filterBuilder.append(String.format("\tand %1$s = :%1$s\n", filter));
+							filterBuilder.append(String.format("\tand %s = :%s\n", filter, filterParam));
 						}
-						params.put(filter, filterValue.getValue());
+						params.put(filterParam, filterValue.getValue());
 						break;
 
 					case Range:
 					case Between:
 						if (filterValue.getValue() != null) {
-							filterBuilder.append(String.format("\tand %1$s >= :%1$s_l\n", filter));
-							params.put(filter + "_l", filterValue.getValue());
+							filterBuilder.append(String.format("\tand %s >= :%s_l\n", filter, filterParam));
+							params.put(filterParam + "_l", filterValue.getValue());
 						}
 
 						if (filterValue.getUpper() != null) {
 							if (filterValue.getType() == FilterType.Between) {
-								filterBuilder.append(String.format("\tand %1$s <= :%1$s_u\n", filter));
+								filterBuilder.append(String.format("\tand %s <= :%s_u\n", filter, filterParam));
 							} else {
-								filterBuilder.append(String.format("\tand %1$s < :%1$s_u\n", filter));
+								filterBuilder.append(String.format("\tand %s < :%s_u\n", filter, filterParam));
 							}
-							params.put(filter + "_u", filterValue.getUpper());
+							params.put(filterParam + "_u", filterValue.getUpper());
 						}
 						break;
 
 					case ContainCase:
-						filterBuilder.append(String.format("\tand %1$s like :%1$s\n", filter));
-						params.put(filter, filterValue.getValue());
+						filterBuilder.append(String.format("\tand %s like :%s\n", filter, filterParam));
+						params.put(filterParam, filterValue.getValue());
 						break;
 
 					case ContainNoCase:
-						filterBuilder.append(String.format("\tand lower(%1$s) like lower(:%1$s)\n", filter));
+						filterBuilder.append(String.format("\tand lower(%s) like lower(:%s)\n", filter, filterParam));
 						params.put(filter, filterValue.getValue());
 						break;
 

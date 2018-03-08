@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SchemaPlugin implements INpsPlugin {
-	private static final Pattern SCHEMA_PATTERN = Pattern.compile(
+	public static final Pattern SCHEMA_PATTERN = Pattern.compile(
 		"(['].*?['])|([\"].*?[\"])|(--.*?\\n)|(/[*].*?[*]/)|(extract[(].+?[)])|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)",
 		Pattern.CASE_INSENSITIVE);
 

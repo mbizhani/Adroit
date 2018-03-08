@@ -1,6 +1,7 @@
 package org.devocative.adroit.sql;
 
 import com.thoughtworks.xstream.XStream;
+import org.devocative.adroit.sql.plugin.INpsPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
 import org.devocative.adroit.sql.result.QueryVO;
 import org.devocative.adroit.sql.result.ResultSetProcessor;
@@ -61,19 +62,19 @@ public class SqlHelper {
 	// ---------------
 
 	public <K, V> Map<K, V> twoCellsAsMap(String name) throws SQLException {
-		return twoCellsAsMap(name, new HashMap<String, Object>());
+		return twoCellsAsMap(name, new HashMap<>());
 	}
 
-	public <K, V> Map<K, V> twoCellsAsMap(String name, Map<String, Object> params) throws SQLException {
-		return twoCellsAsMap(xQueryMap.get(name), params);
+	public <K, V> Map<K, V> twoCellsAsMap(String name, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		return twoCellsAsMap(xQueryMap.get(name), params, plugins);
 	}
 
 	public <K, V> Map<K, V> twoCellsAsMap(XQuery sql) throws SQLException {
 		return twoCellsAsMap(sql, new HashMap<>());
 	}
 
-	public <K, V> Map<K, V> twoCellsAsMap(XQuery sql, Map<String, Object> params) throws SQLException {
-		NamedParameterStatement nps = createNPS(sql, params);
+	public <K, V> Map<K, V> twoCellsAsMap(XQuery sql, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		NamedParameterStatement nps = createNPS(sql, params, plugins);
 
 		ResultSet rs = nps.executeQuery();
 		ResultSetMetaData metaData = rs.getMetaData();
@@ -98,16 +99,16 @@ public class SqlHelper {
 		return firstRowAsList(name, new HashMap<>());
 	}
 
-	public List<Object> firstRowAsList(String name, Map<String, Object> params) throws SQLException {
-		return firstRowAsList(xQueryMap.get(name), params);
+	public List<Object> firstRowAsList(String name, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		return firstRowAsList(xQueryMap.get(name), params, plugins);
 	}
 
 	public List<Object> firstRowAsList(XQuery sql) throws SQLException {
 		return firstRowAsList(sql, new HashMap<>());
 	}
 
-	public List<Object> firstRowAsList(XQuery sql, Map<String, Object> params) throws SQLException {
-		NamedParameterStatement nps = createNPS(sql, params);
+	public List<Object> firstRowAsList(XQuery sql, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		NamedParameterStatement nps = createNPS(sql, params, plugins);
 
 		ResultSet rs = nps.executeQuery();
 		int columnCount = rs.getMetaData().getColumnCount();
@@ -128,16 +129,16 @@ public class SqlHelper {
 		return firstColAsList(name, new HashMap<>());
 	}
 
-	public <T> List<T> firstColAsList(String name, Map<String, Object> params) throws SQLException {
-		return firstColAsList(xQueryMap.get(name), params);
+	public <T> List<T> firstColAsList(String name, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		return firstColAsList(xQueryMap.get(name), params, plugins);
 	}
 
 	public <T> List<T> firstColAsList(XQuery sql) throws SQLException {
 		return firstColAsList(sql, new HashMap<>());
 	}
 
-	public <T> List<T> firstColAsList(XQuery sql, Map<String, Object> params) throws SQLException {
-		NamedParameterStatement nps = createNPS(sql, params);
+	public <T> List<T> firstColAsList(XQuery sql, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		NamedParameterStatement nps = createNPS(sql, params, plugins);
 
 		ResultSet rs = nps.executeQuery();
 		int col1Type = rs.getMetaData().getColumnType(1);
@@ -156,16 +157,16 @@ public class SqlHelper {
 		return firstCell(name, new HashMap<>());
 	}
 
-	public Object firstCell(String name, Map<String, Object> params) throws SQLException {
-		return firstCell(xQueryMap.get(name), params);
+	public Object firstCell(String name, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		return firstCell(xQueryMap.get(name), params, plugins);
 	}
 
 	public Object firstCell(XQuery sql) throws SQLException {
 		return firstCell(sql, new HashMap<>());
 	}
 
-	public Object firstCell(XQuery sql, Map<String, Object> params) throws SQLException {
-		NamedParameterStatement nps = createNPS(sql, params);
+	public Object firstCell(XQuery sql, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		NamedParameterStatement nps = createNPS(sql, params, plugins);
 
 		ResultSet rs = nps.executeQuery();
 		ResultSetMetaData metaData = rs.getMetaData();
@@ -186,16 +187,16 @@ public class SqlHelper {
 		return selectAll(name, new HashMap<>());
 	}
 
-	public QueryVO selectAll(String name, Map<String, Object> params) throws SQLException {
-		return selectAll(xQueryMap.get(name), params);
+	public QueryVO selectAll(String name, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		return selectAll(xQueryMap.get(name), params, plugins);
 	}
 
 	public QueryVO selectAll(XQuery sql) throws SQLException {
 		return selectAll(sql, new HashMap<>());
 	}
 
-	public QueryVO selectAll(XQuery sql, Map<String, Object> params) throws SQLException {
-		NamedParameterStatement nps = createNPS(sql, params);
+	public QueryVO selectAll(XQuery sql, Map<String, Object> params, INpsPlugin... plugins) throws SQLException {
+		NamedParameterStatement nps = createNPS(sql, params, plugins);
 		ResultSet resultSet = nps.executeQuery();
 		QueryVO queryVO = ResultSetProcessor.process(resultSet, nameCase);
 		nps.close();
@@ -217,9 +218,19 @@ public class SqlHelper {
 
 	// ------------------------------
 
-	private NamedParameterStatement createNPS(XQuery sql, Map<String, Object> params) {
-		return new NamedParameterStatement(connection, sql.getSql())
+	private NamedParameterStatement createNPS(XQuery sql, Map<String, Object> params, INpsPlugin... plugins) {
+		NamedParameterStatement nps = new NamedParameterStatement(connection, sql.getSql())
 			.setIgnoreExtraPassedParam(ignoreExtraPassedParam)
 			.setParameters(params);
+
+		if (plugins != null) {
+			for (INpsPlugin plugin : plugins) {
+				if (plugin != null) {
+					nps.addPlugin(plugin);
+				}
+			}
+		}
+
+		return nps;
 	}
 }
