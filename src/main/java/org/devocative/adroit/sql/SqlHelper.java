@@ -10,11 +10,13 @@ import org.devocative.adroit.xml.AdroitXStream;
 import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class SqlHelper {
 	private final Connection connection;
 	private boolean ignoreExtraPassedParam = true;
 	private EColumnNameCase nameCase = EColumnNameCase.LOWER;
+	private Class<? extends Date> dateClassReplacement = java.sql.Date.class;
 
 	private Map<String, XQuery> xQueryMap = new HashMap<>();
 
@@ -36,6 +38,11 @@ public class SqlHelper {
 		return this;
 	}
 
+	public SqlHelper setDateClassReplacement(Class<? extends Date> dateClassReplacement) {
+		this.dateClassReplacement = dateClassReplacement;
+		return this;
+	}
+
 	public SqlHelper setXMLQueryFile(InputStream in) {
 		XStream xStream = new AdroitXStream();
 		xStream.processAnnotations(XQuery.class);
@@ -50,13 +57,13 @@ public class SqlHelper {
 	// ---------------
 
 	public NamedParameterStatement createNPS(String name) {
-		return new NamedParameterStatement(connection, xQueryMap.get(name).getSql())
-			.setIgnoreExtraPassedParam(ignoreExtraPassedParam);
+		return createNPS(xQueryMap.get(name));
 	}
 
 	public NamedParameterStatement createNPS(XQuery sql) {
 		return new NamedParameterStatement(connection, sql.getSql())
-			.setIgnoreExtraPassedParam(ignoreExtraPassedParam);
+			.setIgnoreExtraPassedParam(ignoreExtraPassedParam)
+			.setDateClassReplacement(dateClassReplacement);
 	}
 
 	// ---------------
@@ -219,8 +226,7 @@ public class SqlHelper {
 	// ------------------------------
 
 	private NamedParameterStatement createNPS(XQuery sql, Map<String, Object> params, INpsPlugin... plugins) {
-		NamedParameterStatement nps = new NamedParameterStatement(connection, sql.getSql())
-			.setIgnoreExtraPassedParam(ignoreExtraPassedParam)
+		NamedParameterStatement nps = createNPS(sql)
 			.setParameters(params);
 
 		if (plugins != null) {
