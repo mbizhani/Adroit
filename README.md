@@ -23,6 +23,10 @@ its literals are used as config keys.
 	- Using CDATA for tag with string body
 	- A boolean converter which ignores false value.
 - **LRUCache**: Using `LinkedHashMap` as its core for caching objects with more utilities.
+- **SQL Helper Classes**: `ExportImportHelper` and `SqlHelper` classes are wrapper around `NamedParameterStatement`
+	- **ExportImportHelper**: a class to export/import SQL result to/from XML
+	- **SqlHelp**: it uses an XML file based on `XQuery` class as the SQL queries reference
+	(it is hard to embed SQL queries) in Java code and lots of other helper methods for result conversion to List, Map, or List of Beans
 
 Some samples are provided in the test class, `TestAdroit`. For testing `NamedParameterStatement`, the sample schema is
 provided in the `test/resources/init_hsql.sql` file for HSQLDB database and imported on test startup using `InitDB` class.
