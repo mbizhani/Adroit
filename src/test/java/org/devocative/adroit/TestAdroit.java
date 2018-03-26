@@ -320,7 +320,7 @@ public class TestAdroit {
 		keyStoreFile.delete();
 		Assert.assertFalse(keyStoreFile.exists());
 
-		KeyTool.generatedKeyStoreWithSecureKey(keyStoreFile, keyStorePass, "p6oGS8f8vK7V5wRir9EQ", entryName, entryProtectionParam);
+		KeyTool.generatedKeyStoreWithSecureKey(keyStoreFile, keyStorePass, "p6oGS8f8vK7V5wRir9EQ", entryName, entryProtectionParam, KeyTool.EKeyLength.L128);
 
 		Assert.assertTrue(keyStoreFile.exists());
 

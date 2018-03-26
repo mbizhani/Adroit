@@ -13,7 +13,32 @@ import java.security.Security;
 import java.security.spec.KeySpec;
 
 public class KeyTool {
+	public enum EKeyLength {
+		L128(128), L192(192), L256(256);
+		private int len;
+
+		EKeyLength(int len) {
+			this.len = len;
+		}
+
+		public int getLen() {
+			return len;
+		}
+	}
+
+	private static int ITERATION_COUNT = 65536;
+
+	public static void setIterationCount(int iterationCount) {
+		ITERATION_COUNT = iterationCount;
+	}
+
+	// ---------------
+
 	public static void generatedKeyStoreWithSecureKey(File keyStoreFile, String keyStorePass, String key, String entryName, String entryProtectionParam) {
+		generatedKeyStoreWithSecureKey(keyStoreFile, keyStorePass, key, entryName, entryProtectionParam, EKeyLength.L256);
+	}
+
+	public static void generatedKeyStoreWithSecureKey(File keyStoreFile, String keyStorePass, String key, String entryName, String entryProtectionParam, EKeyLength len) {
 
 		try {
 			FileOutputStream stream = new FileOutputStream(keyStoreFile, false);
@@ -21,7 +46,10 @@ public class KeyTool {
 			SecureRandom sr = new SecureRandom();
 
 			SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-			KeySpec spec = new PBEKeySpec(key.toCharArray(), sr.generateSeed(8), 65536, 256);
+
+			//char[] password, byte[] salt, int iterationCount, int keyLength
+			KeySpec spec = new PBEKeySpec(key.toCharArray(), sr.generateSeed(8), ITERATION_COUNT, len.getLen());
+
 			SecretKey tmp = factory.generateSecret(spec);
 			SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
 
