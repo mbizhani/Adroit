@@ -4,6 +4,9 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import org.devocative.adroit.cache.LRUCache;
+import org.devocative.adroit.date.EUniCalendar;
+import org.devocative.adroit.date.UniDate;
+import org.devocative.adroit.date.UniPeriod;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
@@ -15,7 +18,6 @@ import org.devocative.adroit.sql.plugin.SchemaPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
 import org.devocative.adroit.sql.result.QueryVO;
 import org.devocative.adroit.sql.result.ResultSetProcessor;
-import org.devocative.adroit.vo.DateFieldVO;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.adroit.xml.AdroitXStream;
 import org.junit.Assert;
@@ -86,7 +88,7 @@ public class TestAdroit {
 		NamedParameterStatement nps =
 			new NamedParameterStatement(connection)
 				.setQuery("select -- test :this \n /* test :that from comment */ * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
-					//.setSchema(ConfigUtil.getString(true, "db.schema"))
+				//.setSchema(ConfigUtil.getString(true, "db.schema"))
 				.setParameter("edu", Arrays.asList(1, 2, 3))
 				.setParameter("name", "Jo%");
 
@@ -116,8 +118,8 @@ public class TestAdroit {
 
 		nps = new NamedParameterStatement(connection)
 			.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
-				//.setParameter("edu", Arrays.asList(1, 2, 3))
-				//.setParameter("name", "Jo%")
+			//.setParameter("edu", Arrays.asList(1, 2, 3))
+			//.setParameter("name", "Jo%")
 			.setIgnoreMissedParam(true)
 		;
 		nps.addPlugin(new PaginationPlugin(null, 10L, PaginationPlugin.findDatabaseType(connection)));
@@ -222,8 +224,8 @@ public class TestAdroit {
 				.addPlugin(
 					new FilterPlugin()
 						.add("d_birth_date", new FilterValue(
-							CalendarUtil.getDate(new DateFieldVO(2008, 1, 1)),
-							CalendarUtil.getDate(new DateFieldVO(2009, 1, 1)),
+							UniDate.of(EUniCalendar.Gregorian, 2008, 1, 1).toDate(),
+							UniDate.of(EUniCalendar.Gregorian, 2009, 1, 1).toDate(),
 							FilterType.Range))
 				).executeQuery();
 		rows = new ArrayList<>();
@@ -383,7 +385,7 @@ public class TestAdroit {
 
 	// ---------------
 
-	@Test
+	/*@Test
 	public void testCalendar() {
 		List<Thread> threads = new ArrayList<>();
 
@@ -453,6 +455,101 @@ public class TestAdroit {
 		Assert.assertNotEquals(0, dateField.getYear());
 		Assert.assertNotEquals(0, dateField.getMonth());
 		Assert.assertNotEquals(0, dateField.getDay());
+	}*/
+
+	@Test
+	public void testUniDate() {
+		UniDate date = UniDate.of(EUniCalendar.Gregorian, 2018, 5, 29);
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = UniDate.of(EUniCalendar.Persian, 1397, 3, 8);
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = UniDate.of(EUniCalendar.Gregorian, "2018-05-29", "yyyy-MM-dd");
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = UniDate.of(EUniCalendar.Persian, "1397-03-08", "yyyy-MM-dd");
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = UniDate.of(EUniCalendar.Gregorian, "2018-05-29", "yyyy-MM-dd")
+			.updateCalendar(EUniCalendar.Persian);
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = UniDate.of(EUniCalendar.Persian, "1397-03-08", "yyyy-MM-dd")
+			.updateCalendar(EUniCalendar.Gregorian);
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = UniDate.of(EUniCalendar.Persian, "1397-03-08", "yyyy-MM-dd")
+			.updateCalendar(EUniCalendar.Persian);
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = date.updateMonth(7).updateDay(23);
+		System.out.println("date.getYear() = " + date.getYear());
+		System.out.println("date.getMonth() = " + date.getMonth());
+		System.out.println("date.getDay() = " + date.getDay());
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd"));
+		System.out.println("===================================");
+
+		date = UniDate.of(EUniCalendar.Gregorian, TimeZone.getTimeZone("UTC"))
+			.setTime(8, 0, 0);
+		System.out.println("date = " + date.toDate());
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd HH:mm:ss v"));
+		System.out.println("===================================");
+
+		date = UniDate.now().setTime(8, 0, 0)
+			.updateTimeZone(TimeZone.getTimeZone("UTC"));
+		System.out.println("date.format() = " + date.format("yyyy-MM-dd HH:mm:ss", TimeZone.getTimeZone("Asia/Tehran")));
+		System.out.println("===================================");
+	}
+
+	@Test
+	public void testPeriod() {
+		UniDate start = UniDate.of(EUniCalendar.Gregorian, 2018, 1, 1, 1, 0, 0);
+		UniDate end = start.setTime(9, 59, 30);
+
+		UniPeriod period = UniPeriod.of(end.toTimeInMillis(), start.toTimeInMillis());
+		System.out.println(period.format("D H:M:S"));
+
+		end = start.setDate(2018, 5, 5);
+
+		period = UniPeriod.of(end.toTimeInMillis(), start.toTimeInMillis());
+		System.out.println(period.format("DDDD H:M:S"));
 	}
 
 	// ---------------

@@ -1,5 +1,7 @@
 package org.devocative.adroit;
 
+import org.devocative.adroit.date.UniDate;
+
 import java.io.*;
 import java.util.*;
 
@@ -275,7 +277,7 @@ public final class ConfigUtil {
 			reader.close();
 
 			FileWriter writer = new FileWriter(file);
-			writer.write(String.format("# Write Method: %s\n\n", CalendarUtil.formatDate(new Date(), "yyyy/MM/dd HH:mm:ss")));
+			writer.write(String.format("# Write Method: %s\n\n", UniDate.now().format("yyyy/MM/dd HH:mm:ss")));
 			for (String l : lines) {
 				writer.write(l);
 				writer.write("\n");

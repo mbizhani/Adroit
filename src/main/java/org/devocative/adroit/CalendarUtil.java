@@ -4,11 +4,12 @@ import com.ibm.icu.text.SimpleDateFormat;
 import com.ibm.icu.util.Calendar;
 import com.ibm.icu.util.TimeZone;
 import com.ibm.icu.util.ULocale;
-import org.devocative.adroit.vo.DateFieldVO;
+import org.devocative.adroit.date.DateFieldVO;
 
 import java.text.ParseException;
 import java.util.Date;
 
+@Deprecated
 public final class CalendarUtil {
 	private static final ULocale fa = new ULocale("en_US@calendar=persian");
 
@@ -33,8 +34,7 @@ public final class CalendarUtil {
 			.setHour(calendar.get(Calendar.HOUR_OF_DAY))
 			.setMinute(calendar.get(Calendar.MINUTE))
 			.setSecond(calendar.get(Calendar.SECOND))
-			.setMillisecond(calendar.get(Calendar.MILLISECOND))
-			;
+			.setMillisecond(calendar.get(Calendar.MILLISECOND));
 	}
 
 	public static Date toGregorian(String persianDate, String pattern) {

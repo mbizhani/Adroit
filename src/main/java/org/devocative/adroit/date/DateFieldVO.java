@@ -1,4 +1,4 @@
-package org.devocative.adroit.vo;
+package org.devocative.adroit.date;
 
 import java.io.Serializable;
 
