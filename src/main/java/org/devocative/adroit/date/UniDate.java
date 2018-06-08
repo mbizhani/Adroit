@@ -130,6 +130,10 @@ public class UniDate implements Serializable {
 		return mainCal.get(field.getValue());
 	}
 
+	public java.util.TimeZone getTimeZone() {
+		return java.util.TimeZone.getTimeZone(mainCal.getTimeZone().getID());
+	}
+
 	// ---------------
 
 	public Date toDate() {
@@ -141,7 +145,9 @@ public class UniDate implements Serializable {
 	}
 
 	public String format(String pattern) {
-		return new SimpleDateFormat(pattern, calendar.getLocale()).format(mainCal.getTime());
+		final SimpleDateFormat format = new SimpleDateFormat(pattern, calendar.getLocale());
+		format.setTimeZone(mainCal.getTimeZone());
+		return format.format(mainCal.getTime());
 	}
 
 	public String format(String pattern, java.util.TimeZone timeZone) {
@@ -271,14 +277,39 @@ public class UniDate implements Serializable {
 		return cloned;
 	}
 
+	// ---------------
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof UniDate)) return false;
+
+		UniDate uniDate = (UniDate) o;
+
+		if (calendar != uniDate.calendar) return false;
+		return mainCal != null ? mainCal.equals(uniDate.mainCal) : uniDate.mainCal == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = calendar != null ? calendar.hashCode() : 0;
+		result = 31 * result + (mainCal != null ? mainCal.hashCode() : 0);
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return format("yyyy-MM-dd HH:mm:ss v");
+	}
+
 	// ------------------------------
 
 	private static Calendar createCalendar(EUniCalendar calendar) {
-		return createCalendar(calendar, TimeZone.getDefault(), null);
+		return createCalendar(calendar, getDefault(), null);
 	}
 
 	private static Calendar createCalendar(EUniCalendar calendar, Date date) {
-		return createCalendar(calendar, TimeZone.getDefault(), date);
+		return createCalendar(calendar, getDefault(), date);
 	}
 
 	private static Calendar createCalendar(EUniCalendar calendar, TimeZone tz, Date date) {
@@ -287,5 +318,9 @@ public class UniDate implements Serializable {
 			c.setTime(date);
 		}
 		return c;
+	}
+
+	private static TimeZone getDefault() {
+		return TimeZone.getTimeZone(java.util.TimeZone.getDefault().getID());
 	}
 }

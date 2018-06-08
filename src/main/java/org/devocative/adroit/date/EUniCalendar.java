@@ -8,8 +8,8 @@ import com.ibm.icu.util.ULocale;
 import java.util.Date;
 
 public enum EUniCalendar {
-	Gregorian(new ULocale("en_US")),
-	Persian(new ULocale("en_US@calendar=persian"));
+	Gregorian(new ULocale("@calendar=gregorian")),
+	Persian(new ULocale("@calendar=persian"));
 
 	// ------------------------------
 
@@ -23,7 +23,7 @@ public enum EUniCalendar {
 
 	// ------------------------------
 
-	ULocale getLocale() {
+	public ULocale getLocale() {
 		return locale;
 	}
 
