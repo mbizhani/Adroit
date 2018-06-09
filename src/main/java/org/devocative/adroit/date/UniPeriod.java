@@ -20,7 +20,11 @@ public class UniPeriod {
 	}
 
 	private UniPeriod(long end, long start) {
-		diffInSeconds = (end - start) / 1000;
+		if (end >= start) {
+			diffInSeconds = (end - start) / 1000;
+		} else {
+			throw new RuntimeException("Invalid start and end: start is greater than end!");
+		}
 	}
 
 	// ------------------------------
@@ -34,6 +38,18 @@ public class UniPeriod {
 	}
 
 	// ------------------------------
+
+	public long getTotalMinutes() {
+		return diffInSeconds / MINUTE_IN_SECONDS;
+	}
+
+	public long getTotalHours() {
+		return diffInSeconds / HOUR_IN_SECONDS;
+	}
+
+	public long getTotalDays() {
+		return diffInSeconds / DAY_IN_SECONDS;
+	}
 
 	/*
 	D: days

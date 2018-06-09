@@ -77,7 +77,7 @@ public class UniDate implements Serializable {
 
 	public static UniDate of(EUniCalendar calendar, String dateStr, String pattern) {
 		try {
-			final Date parse = new SimpleDateFormat(pattern, calendar.getLocale()).parse(dateStr);
+			final Date parse = createDateFormat(pattern, calendar).parse(dateStr);
 			return new UniDate(calendar, createCalendar(calendar, parse));
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
@@ -145,15 +145,13 @@ public class UniDate implements Serializable {
 	}
 
 	public String format(String pattern) {
-		final SimpleDateFormat format = new SimpleDateFormat(pattern, calendar.getLocale());
-		format.setTimeZone(mainCal.getTimeZone());
-		return format.format(mainCal.getTime());
+		return createDateFormat(pattern, calendar, mainCal.getTimeZone())
+			.format(mainCal.getTime());
 	}
 
 	public String format(String pattern, java.util.TimeZone timeZone) {
-		final SimpleDateFormat dateFormat = new SimpleDateFormat(pattern, calendar.getLocale());
-		dateFormat.setTimeZone(TimeZone.getTimeZone(timeZone.getID()));
-		return dateFormat.format(mainCal.getTime());
+		return createDateFormat(pattern, calendar, TimeZone.getTimeZone(timeZone.getID()))
+			.format(mainCal.getTime());
 	}
 
 	public UniPeriod diff(UniDate date) {
@@ -162,6 +160,10 @@ public class UniDate implements Serializable {
 		if (ths > tht)
 			return UniPeriod.of(ths, tht);
 		return UniPeriod.of(tht, ths);
+	}
+
+	public UniPeriod sub(UniDate operand2) {
+		return UniPeriod.of(this.toTimeInMillis(), operand2.toTimeInMillis());
 	}
 
 	// ---------------
@@ -229,7 +231,7 @@ public class UniDate implements Serializable {
 
 	public UniDate setMonth(int month) {
 		UniDate cloned = new UniDate(this);
-		cloned.mainCal.set(Calendar.MONTH, month);
+		cloned.mainCal.set(Calendar.MONTH, month - 1);
 		return cloned;
 	}
 
@@ -259,21 +261,30 @@ public class UniDate implements Serializable {
 
 	public UniDate setDate(int year, int month, int day) {
 		UniDate cloned = new UniDate(this);
-		cloned.mainCal.set(year, month, day);
+		cloned.mainCal.set(year, month - 1, day);
 		return cloned;
 	}
 
 	public UniDate setTime(int hour, int minute, int second) {
+		return setTime(hour, minute, second, 0);
+	}
+
+	public UniDate setTime(int hour, int minute, int second, int millisecond) {
 		UniDate cloned = new UniDate(this);
 		cloned.mainCal.set(Calendar.HOUR_OF_DAY, hour);
 		cloned.mainCal.set(Calendar.MINUTE, minute);
 		cloned.mainCal.set(Calendar.SECOND, second);
+		cloned.mainCal.set(Calendar.MILLISECOND, millisecond);
 		return cloned;
 	}
 
 	public UniDate set(EUniDateField field, int value) {
 		UniDate cloned = new UniDate(this);
-		cloned.mainCal.set(field.getValue(), value);
+		if (field == EUniDateField.MONTH) {
+			cloned.mainCal.set(field.getValue(), value - 1);
+		} else {
+			cloned.mainCal.set(field.getValue(), value);
+		}
 		return cloned;
 	}
 
@@ -299,10 +310,20 @@ public class UniDate implements Serializable {
 
 	@Override
 	public String toString() {
-		return format("yyyy-MM-dd HH:mm:ss v");
+		return format("yyyy-MM-dd HH:mm:ss.SSS VV");
 	}
 
 	// ------------------------------
+
+	private static SimpleDateFormat createDateFormat(String pattern, EUniCalendar calendar) {
+		return createDateFormat(pattern, calendar, getDefault());
+	}
+
+	private static SimpleDateFormat createDateFormat(String pattern, EUniCalendar calendar, TimeZone timeZone) {
+		SimpleDateFormat format = new SimpleDateFormat(pattern, calendar.getLocale());
+		format.setTimeZone(timeZone);
+		return format;
+	}
 
 	private static Calendar createCalendar(EUniCalendar calendar) {
 		return createCalendar(calendar, getDefault(), null);
