@@ -37,15 +37,7 @@ public class ResultSetProcessor {
 		while (rs.next()) {
 			Map<String, Object> row = new LinkedHashMap<>();
 			for (int i = 1; i <= size; i++) {
-				String colName = metaData.getColumnName(i);
-				switch (nameCase) {
-					case LOWER:
-						colName = colName.toLowerCase();
-						break;
-					case UPPER:
-						colName = colName.toUpperCase();
-						break;
-				}
+				String colName = getColumnName(metaData, i, nameCase);
 				row.put(colName, getValue(rs, i, metaData.getColumnType(i)));
 			}
 			asMap.onRowResult(row);
@@ -57,15 +49,7 @@ public class ResultSetProcessor {
 		QueryVO result = new QueryVO();
 
 		for (int i = 1; i <= metaData.getColumnCount(); i++) {
-			String colName = metaData.getColumnName(i);
-			switch (nameCase) {
-				case LOWER:
-					colName = colName.toLowerCase();
-					break;
-				case UPPER:
-					colName = colName.toUpperCase();
-					break;
-			}
+			String colName = getColumnName(metaData, i, nameCase);
 			result.addHeader(colName);
 		}
 
@@ -93,5 +77,21 @@ public class ResultSetProcessor {
 				value = rs.getObject(colIndex);
 		}
 		return value;
+	}
+
+	// ------------------------------
+
+	private static String getColumnName(ResultSetMetaData metaData, int idx, EColumnNameCase nameCase) throws SQLException {
+		String colName = metaData.getColumnName(idx);
+		switch (nameCase) {
+			case LOWER:
+				colName = colName.toLowerCase();
+				break;
+			case UPPER:
+				colName = colName.toUpperCase();
+				break;
+		}
+
+		return colName;
 	}
 }

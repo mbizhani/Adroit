@@ -32,9 +32,9 @@ public class FilterPlugin implements INpsPlugin {
 	public FilterPlugin addAll(Map<String, Object> filter) {
 		for (Map.Entry<String, Object> entry : filter.entrySet()) {
 			if (entry.getValue() instanceof String) {
-				add(entry.getKey(), new FilterValue(String.format("%%%s%%", entry.getValue()), FilterType.ContainNoCase));
+				add(entry.getKey(), FilterValue.contain(String.format("%%%s%%", entry.getValue())));
 			} else {
-				add(entry.getKey(), new FilterValue(entry.getValue(), FilterType.Equal));
+				add(entry.getKey(), FilterValue.equal(entry.getValue()));
 			}
 		}
 		return this;
@@ -45,46 +45,56 @@ public class FilterPlugin implements INpsPlugin {
 		if (!filter.isEmpty()) {
 			StringBuilder filterBuilder = new StringBuilder();
 			for (Map.Entry<String, FilterValue> entry : filter.entrySet()) {
-				String filter = entry.getKey();
-				String filterParam = filter.replaceAll("[.]", "__");
+				final String filter = entry.getKey();
+				final String filterParam = filter.replaceAll("[.]", "__");
 
-				FilterValue filterValue = entry.getValue();
+				final FilterValue filterValue = entry.getValue();
+				final String sqlFunc = filterValue.getSqlFunc();
 
 				switch (filterValue.getType()) {
 					case Equal:
 						if (filterValue.getValue() instanceof Collection) {
+							//TODO can't apply filter's sql function here!
 							filterBuilder.append(String.format("\tand %s in (:%s)\n", filter, filterParam));
 						} else {
-							filterBuilder.append(String.format("\tand %s = :%s\n", filter, filterParam));
+							if (sqlFunc == null) {
+								filterBuilder.append(String.format("\tand %s = :%s\n", filter, filterParam));
+							} else {
+								filterBuilder.append(String.format("\tand %1$s(%2$s) = %1$s(:%3$s)\n", sqlFunc, filter, filterParam));
+							}
 						}
 						params.put(filterParam, filterValue.getValue());
 						break;
 
 					case Range:
 					case Between:
-						if (filterValue.getValue() != null) {
-							filterBuilder.append(String.format("\tand %s >= :%s_l\n", filter, filterParam));
-							params.put(filterParam + "_l", filterValue.getValue());
+						if (filterValue.getLower() != null) {
+							if (sqlFunc == null) {
+								filterBuilder.append(String.format("\tand %s >= :%s_l\n", filter, filterParam));
+							} else {
+								filterBuilder.append(String.format("\tand %1$s(%2$s) >= %1$s(:%3$s_l)\n", sqlFunc, filter, filterParam));
+							}
+							params.put(filterParam + "_l", filterValue.getLower());
 						}
 
 						if (filterValue.getUpper() != null) {
-							if (filterValue.getType() == FilterType.Between) {
-								filterBuilder.append(String.format("\tand %s <= :%s_u\n", filter, filterParam));
+							String opr = filterValue.getType() == FilterType.Between ? "<=" : "<";
+							if (sqlFunc == null) {
+								filterBuilder.append(String.format("\tand %s %s :%s_u\n", filter, opr, filterParam));
 							} else {
-								filterBuilder.append(String.format("\tand %s < :%s_u\n", filter, filterParam));
+								filterBuilder.append(String.format("\tand %1$s(%2$s) %3$s %1$s(:%4$s_u)\n", sqlFunc, filter, opr, filterParam));
 							}
 							params.put(filterParam + "_u", filterValue.getUpper());
 						}
 						break;
 
-					case ContainCase:
-						filterBuilder.append(String.format("\tand %s like :%s\n", filter, filterParam));
+					case Contain:
+						if (sqlFunc == null) {
+							filterBuilder.append(String.format("\tand %s like :%s\n", filter, filterParam));
+						} else {
+							filterBuilder.append(String.format("\tand %1$s(%2$s) like %1$s(:%3$s)\n", sqlFunc, filter, filterParam));
+						}
 						params.put(filterParam, filterValue.getValue());
-						break;
-
-					case ContainNoCase:
-						filterBuilder.append(String.format("\tand lower(%s) like lower(:%s)\n", filter, filterParam));
-						params.put(filter, filterValue.getValue());
 						break;
 
 					default:

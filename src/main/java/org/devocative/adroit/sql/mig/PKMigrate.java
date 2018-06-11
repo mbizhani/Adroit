@@ -45,14 +45,14 @@ public class PKMigrate {
 
 	private void migrate() throws SQLException {
 		QueryVO pk = helper.selectAll("pkList",
-			ObjectBuilder.<String, Object>createDefaultMap().put("tables", tables).get());
+			ObjectBuilder.<String, Object>map().put("tables", tables).get());
 		List<TablePkFkVO> tablePkFkVOs = pk.toBeans(TablePkFkVO.class);
 
 		logger.info("TablePkFkVO size = {}", tablePkFkVOs.size());
 
 		for (TablePkFkVO table : tablePkFkVOs) {
 			QueryVO fk = helper.selectAll("fkList",
-				ObjectBuilder.<String, Object>createDefaultMap().put("table", table.getName()).get());
+				ObjectBuilder.<String, Object>map().put("table", table.getName()).get());
 			table.setReferencedBy(fk.toBeans(RefConsVO.class));
 		}
 
@@ -69,7 +69,7 @@ public class PKMigrate {
 		logger.info("Migrating Table: {}", table.getName());
 
 		helper.executeDDL("renameColumn",
-			ObjectBuilder.<String, Object>createDefaultMap()
+			ObjectBuilder.<String, Object>map()
 				.put("table", table.getName())
 				.put("col_cur_name", table.getPkColumn())
 				.put("col_new_name", "old_" + table.getPkColumn())
@@ -78,7 +78,7 @@ public class PKMigrate {
 		logger.info("\tRename PK column: {}", table.getPkColumn());
 
 		helper.executeDDL("addColumn",
-			ObjectBuilder.<String, Object>createDefaultMap()
+			ObjectBuilder.<String, Object>map()
 				.put("table", table.getName())
 				.put("col_name", table.getPkColumn())
 				.put("col_type", "varchar2(255 char)") //TODO
@@ -88,7 +88,7 @@ public class PKMigrate {
 
 		for (RefConsVO refConsVO : table.getReferencedBy()) {
 			helper.executeDDL("renameColumn",
-				ObjectBuilder.<String, Object>createDefaultMap()
+				ObjectBuilder.<String, Object>map()
 					.put("table", refConsVO.getTableName())
 					.put("col_cur_name", refConsVO.getColumnName())
 					.put("col_new_name", "old_" + refConsVO.getColumnName())
@@ -96,7 +96,7 @@ public class PKMigrate {
 			);
 
 			helper.executeDDL("addColumn",
-				ObjectBuilder.<String, Object>createDefaultMap()
+				ObjectBuilder.<String, Object>map()
 					.put("table", refConsVO.getTableName())
 					.put("col_name", refConsVO.getColumnName())
 					.put("col_type", "varchar2(255 char)") //TODO
@@ -118,7 +118,7 @@ public class PKMigrate {
 				Object newId = UUID.randomUUID().toString(); //TODO
 
 				updateIdNps
-					.setParameters(ObjectBuilder.<String, Object>createDefaultMap()
+					.setParameters(ObjectBuilder.<String, Object>map()
 						.put("new_id", newId)
 						.put("cur_id", id)
 						.get())
@@ -130,7 +130,7 @@ public class PKMigrate {
 					NamedParameterStatement updateFkNps = helper.createNPS(XQuery.sql(updateFkSql));
 
 					updateFkNps
-						.setParameters(ObjectBuilder.<String, Object>createDefaultMap()
+						.setParameters(ObjectBuilder.<String, Object>map()
 							.put("new_id", newId)
 							.put("cur_id", id)
 							.get())
@@ -146,7 +146,7 @@ public class PKMigrate {
 		}
 
 		for (RefConsVO refConsVO : table.getReferencedBy()) {
-			helper.executeDDL("dropCons", ObjectBuilder.<String, Object>createDefaultMap()
+			helper.executeDDL("dropCons", ObjectBuilder.<String, Object>map()
 				.put("table", refConsVO.getTableName())
 				.put("cons", refConsVO.getConsName())
 				.get());
@@ -154,7 +154,7 @@ public class PKMigrate {
 			dropOtherCons(refConsVO.getTableName(), "OLD_" + refConsVO.getColumnName());
 		}
 
-		helper.executeDDL("dropCons", ObjectBuilder.<String, Object>createDefaultMap()
+		helper.executeDDL("dropCons", ObjectBuilder.<String, Object>map()
 			.put("table", table.getName())
 			.put("cons", table.getPkConstraint())
 			.get());
@@ -162,14 +162,14 @@ public class PKMigrate {
 		dropOtherCons(table.getName(), "OLD_" + table.getPkColumn());
 
 
-		helper.executeDDL("addPkCons", ObjectBuilder.<String, Object>createDefaultMap()
+		helper.executeDDL("addPkCons", ObjectBuilder.<String, Object>map()
 			.put("table", table.getName())
 			.put("cons", table.getPkConstraint())
 			.put("col", table.getPkColumn())
 			.get());
 
 		for (RefConsVO refConsVO : table.getReferencedBy()) {
-			helper.executeDDL("addFkCons", ObjectBuilder.<String, Object>createDefaultMap()
+			helper.executeDDL("addFkCons", ObjectBuilder.<String, Object>map()
 				.put("table", refConsVO.getTableName())
 				.put("cons", refConsVO.getConsName())
 				.put("col", refConsVO.getColumnName())
@@ -179,12 +179,12 @@ public class PKMigrate {
 	}
 
 	private void dropOtherCons(String table, String column) throws SQLException {
-		List<String> oldPkColConsList = helper.firstColAsList("allConsList", ObjectBuilder.<String, Object>createDefaultMap()
+		List<String> oldPkColConsList = helper.firstColAsList("allConsList", ObjectBuilder.<String, Object>map()
 			.put("table", table)
 			.put("col", column)
 			.get());
 		for (String oldPkColCons : oldPkColConsList) {
-			helper.executeDDL("dropCons", ObjectBuilder.<String, Object>createDefaultMap()
+			helper.executeDDL("dropCons", ObjectBuilder.<String, Object>map()
 				.put("table", table)
 				.put("cons", oldPkColCons)
 				.get());

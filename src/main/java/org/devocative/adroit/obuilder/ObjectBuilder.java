@@ -3,19 +3,19 @@ package org.devocative.adroit.obuilder;
 import java.util.*;
 
 /**
- * A simple wrapper class around classes using method chaining to add/modify elements easily
+ * A simple wrapper class around Collection using method chaining to add/modify elements easily
  */
 public class ObjectBuilder {
 
 	/**
-	 * Creates a MapBuilder around HashMap
+	 * Creates a MapBuilder around Default
 	 *
 	 * @param <K> the key type
 	 * @param <V> the value type
 	 * @return a MapBuilder object for method chaining
 	 */
-	public static <K, V> MapBuilder<K, V> createDefaultMap() {
-		return createMap(new HashMap<K, V>());
+	public static <K, V> MapBuilder<K, V> map() {
+		return map(new LinkedHashMap<>());
 	}
 
 	/**
@@ -26,7 +26,7 @@ public class ObjectBuilder {
 	 * @param <V>      the value type
 	 * @return a MapBuilder object for method chaining
 	 */
-	public static <K, V> MapBuilder<K, V> createMap(Map<K, V> instance) {
+	public static <K, V> MapBuilder<K, V> map(Map<K, V> instance) {
 		return new MapBuilder<>(instance);
 	}
 
@@ -36,8 +36,12 @@ public class ObjectBuilder {
 	 * @param <T> type of list
 	 * @return a CollectionBuilder object for method chaining
 	 */
-	public static <T> CollectionBuilder<T> createDefaultList() {
-		return createCollection(new ArrayList<T>());
+	public static <T> CollectionBuilder<T> list() {
+		return list(new ArrayList<>());
+	}
+
+	public static <T> CollectionBuilder<T> list(List<T> list) {
+		return collection(list);
 	}
 
 	/**
@@ -46,17 +50,22 @@ public class ObjectBuilder {
 	 * @param <T> type of set
 	 * @return a CollectionBuilder object for method chaining
 	 */
-	public static <T> CollectionBuilder<T> createDefaultSet() {
-		return createCollection(new HashSet<T>());
+	public static <T> CollectionBuilder<T> set() {
+		return set(new HashSet<>());
+	}
+
+	public static <T> CollectionBuilder<T> set(Set<T> set) {
+		return collection(set);
 	}
 
 	/**
 	 * Creates a CollectionBuilder around passed instance
+	 *
 	 * @param instance of a collection
-	 * @param <T> type of collection
+	 * @param <T>      type of collection
 	 * @return a CollectionBuilder object for method chaining
 	 */
-	public static <T> CollectionBuilder<T> createCollection(Collection<T> instance) {
+	public static <T> CollectionBuilder<T> collection(Collection<T> instance) {
 		return new CollectionBuilder<>(instance);
 	}
 }

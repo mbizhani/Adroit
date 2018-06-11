@@ -7,15 +7,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SchemaPlugin implements INpsPlugin {
-	public static final Pattern SCHEMA_PATTERN = Pattern.compile(
-		"(['].*?['])|([\"].*?[\"])|(--.*?\\n)|(/[*].*?[*]/)|(extract[(].+?[)])|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)",
-		Pattern.CASE_INSENSITIVE);
+	private static final String PATTERN =
+		"(['].*?['])|([\"].*?[\"])|(--.*?\\n)|(/[*].*?[*]/)|(extract[(].+?[)])|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)";
+	private static Pattern SCHEMA_PATTERN;
 
 	private static final Set<String> KEYWORDS = new HashSet<>();
 
 	static {
+		SCHEMA_PATTERN = Pattern.compile(PATTERN, Pattern.CASE_INSENSITIVE);
+
 		KEYWORDS.add("set");
 		KEYWORDS.add("dual");
+	}
+
+	// ------------------------------
+
+	public static void set(String schemaPattern, Set<String> keywords) {
+		SCHEMA_PATTERN = Pattern.compile(schemaPattern);
+
+		KEYWORDS.clear();
+		KEYWORDS.addAll(keywords);
 	}
 
 	// ------------------------------
@@ -36,6 +47,10 @@ public class SchemaPlugin implements INpsPlugin {
 	}
 
 	// ------------------------------
+
+	public static Pattern getSchemaPattern() {
+		return Pattern.compile(PATTERN);
+	}
 
 	public static String applySchema(String schema, String query) {
 		StringBuffer builder = new StringBuffer();

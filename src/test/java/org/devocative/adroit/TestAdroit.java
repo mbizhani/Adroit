@@ -9,7 +9,6 @@ import org.devocative.adroit.date.UniDate;
 import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
-import org.devocative.adroit.sql.filter.FilterType;
 import org.devocative.adroit.sql.filter.FilterValue;
 import org.devocative.adroit.sql.plugin.FilterPlugin;
 import org.devocative.adroit.sql.plugin.PaginationPlugin;
@@ -32,12 +31,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class TestAdroit {
-	String keyStorePass = "adroitPassWord";
-	String entryName = "adroit";
-	String entryProtectionParam = "WiPHF7JjfuKHJz7jFI18";
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-	static Connection connection;
+public class TestAdroit {
+	private String keyStorePass = "adroitPassWord";
+	private String entryName = "adroit";
+	private String entryProtectionParam = "WiPHF7JjfuKHJz7jFI18";
+
+	private static Connection connection;
 
 	@BeforeClass
 	public static void init() {
@@ -45,11 +47,11 @@ public class TestAdroit {
 
 		InitDB initDB = new InitDB();
 		initDB
-				.setDriver(ConfigUtil.getString(true, "db.driver"))
-				.setUrl(ConfigUtil.getString(true, "db.url"))
-				.setUsername(ConfigUtil.getString(true, "db.username"))
-				.setPassword(ConfigUtil.getString("db.password", ""))
-				.addScript("src/test/resources/init_hsql.sql");
+			.setDriver(ConfigUtil.getString(true, "db.driver"))
+			.setUrl(ConfigUtil.getString(true, "db.url"))
+			.setUsername(ConfigUtil.getString(true, "db.username"))
+			.setPassword(ConfigUtil.getString("db.password", ""))
+			.addScript("src/test/resources/init_hsql.sql");
 
 		initDB.build();
 
@@ -85,15 +87,15 @@ public class TestAdroit {
 	@Test
 	public void testNPS() throws Exception {
 		NamedParameterStatement nps =
-				new NamedParameterStatement(connection)
-						.setQuery("select -- test :this \n /* test :that from comment */ * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
-						//.setSchema(ConfigUtil.getString(true, "db.schema"))
-						.setParameter("edu", Arrays.asList(1, 2, 3))
-						.setParameter("name", "Jo%");
+			new NamedParameterStatement(connection)
+				.setQuery("select -- test :this \n /* test :that from comment */ * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
+				//.setSchema(ConfigUtil.getString(true, "db.schema"))
+				.setParameter("edu", Arrays.asList(1, 2, 3))
+				.setParameter("name", "Jo%");
 
 		nps
-				.addPlugin(new PaginationPlugin(1L, null, PaginationPlugin.findDatabaseType(connection)))
-				.addPlugin(new SchemaPlugin(ConfigUtil.getString(true, "db.schema")))
+			.addPlugin(PaginationPlugin.of(connection, 1L, null))
+			.addPlugin(new SchemaPlugin(ConfigUtil.getString(true, "db.schema")))
 		;
 
 		int no = 0;
@@ -108,20 +110,20 @@ public class TestAdroit {
 
 		//MYSQL Assert.assertEquals("select -- test :this \n /* test :that from comment */ * from adroit.t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7  limit  ?8 , ?9 ", nps.getFinalIndexedQuery());
 		Assert.assertEquals(
-				"select * from (select a.*, rownum rnum_pg from ( " +
-						"select -- test :this \n /* test :that from comment */ * from public.t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7 " +
-						" ) a) where rnum_pg >=  ?8 ", nps.getFinalIndexedQuery());
+			"select * from (select a.*, rownum rnum_pg from ( " +
+				"select -- test :this \n /* test :that from comment */ * from public.t_person where (f_education in ( ?1 , ?2 , ?3 ) or f_education in ( ?4 , ?5 , ?6 )) and c_name like  ?7 " +
+				" ) a) where rnum_pg >=  ?8 ", nps.getFinalIndexedQuery());
 		Assert.assertEquals("Jo%", nps.getFinalParams().get(7));
 
 		Assert.assertEquals(2, no);
 
 		nps = new NamedParameterStatement(connection)
-				.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
-				//.setParameter("edu", Arrays.asList(1, 2, 3))
-				//.setParameter("name", "Jo%")
-				.setIgnoreMissedParam(true)
+			.setQuery("select * from t_person where (f_education in (:edu) or f_education in (:edu)) and c_name like :name")
+			//.setParameter("edu", Arrays.asList(1, 2, 3))
+			//.setParameter("name", "Jo%")
+			.setIgnoreMissedParam(true)
 		;
-		nps.addPlugin(new PaginationPlugin(null, 10L, PaginationPlugin.findDatabaseType(connection)));
+		nps.addPlugin(PaginationPlugin.of(connection, null, 10L));
 
 		no = 0;
 		rs = nps.executeQuery();
@@ -141,7 +143,7 @@ public class TestAdroit {
 	@Test
 	public void testParamOfNPS() {
 		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' -- ignore :this \n" +
-				" /* and ignore :this too */ from dual where 1=:One and 2<>:two or :One=:two", false);
+			" /* and ignore :this too */ from dual where 1=:One and 2<>:two or :One=:two", false);
 		Assert.assertEquals(2, paramsInQuery.size());
 		Assert.assertNotEquals("one", paramsInQuery.get(0));
 		Assert.assertEquals("One", paramsInQuery.get(0));
@@ -151,42 +153,42 @@ public class TestAdroit {
 	@Test
 	public void testSchemaOfNPS() {
 		String q =
-				"select \n" +
-						"--comment to test from schema \n" +  //NOTE: no schema addition
-						"/*comment to test from schema*/ \n" + //NOTE: no schema addition
-						"eq.code equipment_code,\n" +
-						"'a from and join in string constant' as \"from and join and into id\"\n" + //NOTE: no schema addition
-						"from\n" +
-						"(select \n" +
-						"flr.equipment equipment_id ,\n" +
+			"select \n" +
+				"--comment to test from schema \n" +  //NOTE: no schema addition
+				"/*comment to test from schema*/ \n" + //NOTE: no schema addition
+				"eq.code equipment_code,\n" +
+				"'a from and join in string constant' as \"from and join and into id\"\n" + //NOTE: no schema addition
+				"from\n" +
+				"(select \n" +
+				"flr.equipment equipment_id ,\n" +
 
-						//NOTE: no schema addition /!\
-						"ROUND((extract(DAY FROM MAX(NVL(flr.endDateTime,SYSDATE))- MIN(flr.startDateTime)) - SUM(extract(DAY FROM NVL(flr.endDateTime,SYSDATE) - flr.startDateTime))) / (COUNT(*) - 1 ),2) mtbf\n" +
+				//NOTE: no schema addition /!\
+				"ROUND((extract(DAY FROM MAX(NVL(flr.endDateTime,SYSDATE))- MIN(flr.startDateTime)) - SUM(extract(DAY FROM NVL(flr.endDateTime,SYSDATE) - flr.startDateTime))) / (COUNT(*) - 1 ),2) mtbf\n" +
 
-						//NOTE: schema addition to "Failure" but not to "Attempt" /!\
-						"from Failure flr, Attempt atm \n" +
-						"where flr.equipment = :eq_id and flr.startDateTime >= :start_date and flr.endDateTime <= :end_date and flr.id = atm.id\n" +
-						"group by flr.equipment) T1\n" +
-						"join Equipment eq on T1.equipment_id = eq.id\n" + //NOTE: schema addition
-						"join Asset ast on eq.vrAsset = ast.id\n" +        //NOTE: schema addition
-						"join Item item on ast.vrPhysicalItem = item.id";  //NOTE: schema addition
+				//NOTE: schema addition to "Failure" but not to "Attempt" /!\
+				"from Failure flr, Attempt atm \n" +
+				"where flr.equipment = :eq_id and flr.startDateTime >= :start_date and flr.endDateTime <= :end_date and flr.id = atm.id\n" +
+				"group by flr.equipment) T1\n" +
+				"join Equipment eq on T1.equipment_id = eq.id\n" + //NOTE: schema addition
+				"join Asset ast on eq.vrAsset = ast.id\n" +        //NOTE: schema addition
+				"join Item item on ast.vrPhysicalItem = item.id";  //NOTE: schema addition
 
 		String expected =
-				"select \n" +
-						"--comment to test from schema \n" +
-						"/*comment to test from schema*/ \n" +
-						"eq.code equipment_code,\n" +
-						"'a from and join in string constant' as \"from and join and into id\"\n" +
-						"from\n" +
-						"(select \n" +
-						"flr.equipment equipment_id ,\n" +
-						"ROUND((extract(DAY FROM MAX(NVL(flr.endDateTime,SYSDATE))- MIN(flr.startDateTime)) - SUM(extract(DAY FROM NVL(flr.endDateTime,SYSDATE) - flr.startDateTime))) / (COUNT(*) - 1 ),2) mtbf\n" +
-						"from qaz.Failure flr, Attempt atm \n" +
-						"where flr.equipment = :eq_id and flr.startDateTime >= :start_date and flr.endDateTime <= :end_date and flr.id = atm.id\n" +
-						"group by flr.equipment) T1\n" +
-						"join qaz.Equipment eq on T1.equipment_id = eq.id\n" +
-						"join qaz.Asset ast on eq.vrAsset = ast.id\n" +
-						"join qaz.Item item on ast.vrPhysicalItem = item.id";
+			"select \n" +
+				"--comment to test from schema \n" +
+				"/*comment to test from schema*/ \n" +
+				"eq.code equipment_code,\n" +
+				"'a from and join in string constant' as \"from and join and into id\"\n" +
+				"from\n" +
+				"(select \n" +
+				"flr.equipment equipment_id ,\n" +
+				"ROUND((extract(DAY FROM MAX(NVL(flr.endDateTime,SYSDATE))- MIN(flr.startDateTime)) - SUM(extract(DAY FROM NVL(flr.endDateTime,SYSDATE) - flr.startDateTime))) / (COUNT(*) - 1 ),2) mtbf\n" +
+				"from qaz.Failure flr, Attempt atm \n" +
+				"where flr.equipment = :eq_id and flr.startDateTime >= :start_date and flr.endDateTime <= :end_date and flr.id = atm.id\n" +
+				"group by flr.equipment) T1\n" +
+				"join qaz.Equipment eq on T1.equipment_id = eq.id\n" +
+				"join qaz.Asset ast on eq.vrAsset = ast.id\n" +
+				"join qaz.Item item on ast.vrPhysicalItem = item.id";
 
 		String result = SchemaPlugin.applySchema("qaz", q);
 
@@ -195,60 +197,93 @@ public class TestAdroit {
 
 	@Test
 	public void testFilterOfNPS() throws SQLException {
+		String process = new FilterPlugin().addAll(
+			ObjectBuilder.<String, Object>map()
+				.put("col1", "A")
+				.put("col2", 123)
+				.put("col3", new Date())
+				.get())
+			.process("", ObjectBuilder.<String, Object>map().get());
+		assertTrue(process.contains("and col1 like :col1"));
+		assertTrue(process.contains("and col2 = :col2"));
+		assertTrue(process.contains("and col3 = :col3"));
+
+		process = new FilterPlugin()
+			.add("cl1", FilterValue.equal(1))
+			.add("cl2", FilterValue.equal(Arrays.asList(1, 3, 5)))
+			.add("cl3", FilterValue.range(new Date(), null))
+			.add("cl4", FilterValue.between(1, 2))
+			.add("cl5", FilterValue.between(1.1, 2.2).setSqlFunc("trunc"))
+			.add("cl6", FilterValue.between(null, 2.2).setSqlFunc("trunc"))
+			.add("cl7", FilterValue.contain("cl7").setSqlFunc("lower"))
+			.process("", ObjectBuilder.<String, Object>map().get());
+		assertTrue(process.contains("and cl1 = :cl1"));
+		assertTrue(process.contains("and cl2 in (:cl2)"));
+		assertTrue(process.contains("and cl3 >= :cl3_l"));
+		assertTrue(process.contains("and trunc(cl5) >= trunc(:cl5_l)\n\tand trunc(cl5) <= trunc(:cl5_u)"));
+		assertTrue(process.contains("and trunc(cl6) <= trunc(:cl6_u)"));
+		assertTrue(process.contains("and lower(cl7) like lower(:cl7)"));
+
+		process = new FilterPlugin()
+			.add("c1", FilterValue.equal(1))
+			.process("select * from t1 where 1=1" + FilterPlugin.EMBED_FILTER_EXPRESSION,
+				ObjectBuilder.<String, Object>map().get());
+		assertEquals("select * from t1 where 1=1\tand c1 = :c1\n", process);
+
 		// --------------- CONTAINS NO CASE
+
 		ResultSet rs =
-				new NamedParameterStatement(connection, "select * from t_person")
-						.addPlugin(
-								new FilterPlugin()
-										.add("C_NAME", new FilterValue("ja%", FilterType.ContainNoCase))
-						).executeQuery();
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("C_NAME", FilterValue.contain("ja%").setSqlFunc("lower"))
+				).executeQuery();
 		List<Object> rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
 		Assert.assertEquals(2, rows.size());
 
 		// --------------- CONTAINS CASE
 		rs =
-				new NamedParameterStatement(connection, "select * from t_person")
-						.addPlugin(
-								new FilterPlugin()
-										.add("C_Name", new FilterValue("%o%", FilterType.ContainCase))
-						).executeQuery();
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("C_Name", FilterValue.contain("%o%"))
+				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
 		Assert.assertEquals(2, rows.size());
 
 		// --------------- RANGE
 		rs =
-				new NamedParameterStatement(connection, "select * from t_person")
-						.addPlugin(
-								new FilterPlugin()
-										.add("d_birth_date", new FilterValue(
-												UniDate.of(EUniCalendar.Gregorian, 2008, 1, 1).toDate(),
-												UniDate.of(EUniCalendar.Gregorian, 2009, 1, 1).toDate(),
-												FilterType.Range))
-						).executeQuery();
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("d_birth_date", FilterValue.range(
+							UniDate.of(EUniCalendar.Gregorian, 2008, 1, 1).toDate(),
+							UniDate.of(EUniCalendar.Gregorian, 2009, 1, 1).toDate()))
+				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
 		Assert.assertEquals(1, rows.size());
 
 		// --------------- LIST
 		rs =
-				new NamedParameterStatement(connection, "select * from t_person")
-						.addPlugin(
-								new FilterPlugin()
-										.add("f_education", new FilterValue(Arrays.asList(2, 4, 6, 8), FilterType.Equal))
-						).executeQuery();
+			new NamedParameterStatement(connection, "select * from t_person")
+				.addPlugin(
+					new FilterPlugin()
+						.add("f_education", FilterValue.equal(Arrays.asList(2, 4, 6, 8)))
+				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
 		Assert.assertEquals(2, rows.size());
 
 		// --------------- EMBEDDED FILTER
 		rs =
-				new NamedParameterStatement(connection, "select * from t_person where 1=1 %FILTER% order by c_name")
-						.addPlugin(
-								new FilterPlugin()
-										.add("f_education", new FilterValue(Arrays.asList(2, 4, 6, 8), FilterType.Equal))
-						).executeQuery();
+			new NamedParameterStatement(connection, "select * from t_person where 1=1 %FILTER% order by c_name")
+				.addPlugin(
+					new FilterPlugin()
+						.add("f_education", FilterValue.equal(Arrays.asList(2, 4, 6, 8)))
+				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
 		Assert.assertEquals(2, rows.size());
@@ -343,34 +378,34 @@ public class TestAdroit {
 	@Test
 	public void testObjectBuilder() {
 		Collection<String> list1 = ObjectBuilder
-				.<String>createDefaultList()
-				.add("A")
-				.add("B")
-				.add("C")
-				.get();
+			.<String>list()
+			.add("A")
+			.add("B")
+			.add("C")
+			.get();
 
 		Collection<String> list2 = ObjectBuilder
-				.createCollection(new LinkedList<String>())
-				.add("A")
-				.add("B")
-				.add("D")
-				.get();
+			.collection(new LinkedList<String>())
+			.add("A")
+			.add("B")
+			.add("D")
+			.get();
 
 		Assert.assertNotEquals(list1, list2);
 
 		Map<String, Integer> map1 = ObjectBuilder
-				.<String, Integer>createDefaultMap()
-				.put("A", 1)
-				.put("B", 2)
-				.put("C", 33)
-				.get();
+			.<String, Integer>map()
+			.put("A", 1)
+			.put("B", 2)
+			.put("C", 33)
+			.get();
 
 		Map<String, Integer> map2 = ObjectBuilder
-				.createMap(new LinkedHashMap<String, Integer>())
-				.put("C", 33)
-				.put("A", 1)
-				.put("B", 2)
-				.get();
+			.map(new LinkedHashMap<String, Integer>())
+			.put("C", 33)
+			.put("A", 1)
+			.put("B", 2)
+			.get();
 
 		Assert.assertEquals(map1, map2);
 
@@ -403,18 +438,18 @@ public class TestAdroit {
 		Assert.assertEquals(k2.getValue(), k1.getValue());
 
 		ListHolder l1 = new ListHolder(
-				ObjectUtil.asList(
-						new KeyValueVO<>("A", (Integer) null),
-						new KeyValueVO<>("B", 1),
-						new KeyValueVO<>("D", 2)
-				));
+			ObjectUtil.asList(
+				new KeyValueVO<>("A", (Integer) null),
+				new KeyValueVO<>("B", 1),
+				new KeyValueVO<>("D", 2)
+			));
 
 		ListHolder l2 = new ListHolder(
-				ObjectUtil.asList(
-						new KeyValueVO<>("A", 11),
-						new KeyValueVO<>("B", (Integer) null),
-						new KeyValueVO<>("C", 13)
-				));
+			ObjectUtil.asList(
+				new KeyValueVO<>("A", 11),
+				new KeyValueVO<>("B", (Integer) null),
+				new KeyValueVO<>("C", 13)
+			));
 
 		ObjectUtil.merge(l2, l1, false);
 
@@ -526,9 +561,9 @@ public class TestAdroit {
 	@Test
 	public void testXML() {
 		BeanAndXml bax = new BeanAndXml()
-				.setAttr("ATTR")
-				.setText("a < b && c >= 45 %% @")
-				.setBody("Hello\n\tHow are you?\n~!@#$%^&*()_+}{][\\//><");
+			.setAttr("ATTR")
+			.setText("a < b && c >= 45 %% @")
+			.setBody("Hello\n\tHow are you?\n~!@#$%^&*()_+}{][\\//><");
 
 
 		XStream xStream = new AdroitXStream();
@@ -536,11 +571,11 @@ public class TestAdroit {
 		String xml = xStream.toXML(bax);
 		System.out.println(xml);
 		Assert.assertEquals("<bean attr=\"ATTR\" writeTrue=\"true\">\n" +
-				"\t<text><![CDATA[a < b && c >= 45 %% @]]></text>\n" +
-				"\t<body><![CDATA[Hello\n" +
-				"\tHow are you?\n" +
-				"~!@#$%^&*()_+}{][\\//><]]></body>\n" +
-				"</bean>", xml);
+			"\t<text><![CDATA[a < b && c >= 45 %% @]]></text>\n" +
+			"\t<body><![CDATA[Hello\n" +
+			"\tHow are you?\n" +
+			"~!@#$%^&*()_+}{][\\//><]]></body>\n" +
+			"</bean>", xml);
 
 		BeanAndXml bax2 = (BeanAndXml) xStream.fromXML(xml);
 		Assert.assertTrue(bax2.equals(bax));
@@ -550,8 +585,8 @@ public class TestAdroit {
 		xml = xStream.toXML(bax);
 		System.out.println(xml);
 		Assert.assertEquals("<bean attr=\"ATTR\" writeTrue=\"true\"><text><![CDATA[a < b && c >= 45 %% @]]></text><body><![CDATA[Hello\n" +
-				"\tHow are you?\n" +
-				"~!@#$%^&*()_+}{][\\//><]]></body></bean>", xml);
+			"\tHow are you?\n" +
+			"~!@#$%^&*()_+}{][\\//><]]></body></bean>", xml);
 
 		bax2 = (BeanAndXml) xStream.fromXML(xml);
 		Assert.assertTrue(bax2.equals(bax));
