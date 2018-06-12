@@ -6,15 +6,16 @@ import java.util.*;
 
 public class LRUCache<K, V> implements ICache<K, V> {
 	private int capacity;
-	private long missHitCount;
-	private final Map<K, V> map;
+	private long missHitCount = 0;
 
-	private IMissedHitHandler<K, V> missedHitHandler;
+	private final Map<K, V> map;
+	private final IMissedHitHandler<K, V> missedHitHandler;
 
 	// ------------------------------
 
-	public LRUCache(int capacity) {
+	public LRUCache(int capacity, IMissedHitHandler<K, V> missedHitHandler) {
 		this.capacity = capacity;
+		this.missedHitHandler = missedHitHandler;
 
 		map = Collections.synchronizedMap(new CacheMap());
 	}
@@ -57,26 +58,19 @@ public class LRUCache<K, V> implements ICache<K, V> {
 	}
 
 	@Override
-	public void setMissedHitHandler(IMissedHitHandler<K, V> missedHitHandler) {
-		this.missedHitHandler = missedHitHandler;
+	public synchronized void put(K key, V value) {
+		if (!map.containsKey(key)) {
+			if (map.size() == capacity) {
+				missHitCount++;
+			}
+
+			map.put(key, value);
+		} else {
+			throw new RuntimeException("Invalid Put Action, Key Already Exists: " + key);
+		}
 	}
 
 	// ------------------------------
-
-	@Override
-	public void put(K key, V value) {
-		if (!map.containsKey(key) && map.size() >= capacity) {
-			missHitCount++;
-		}
-		map.put(key, value);
-	}
-
-	@Override
-	public synchronized void update(K key, V value) {
-		if (map.containsKey(key)) {
-			map.put(key, value);
-		}
-	}
 
 	@Override
 	public V remove(K key) {
@@ -123,7 +117,11 @@ public class LRUCache<K, V> implements ICache<K, V> {
 	// ------------------------------
 
 	private void callMissedHitHandler(K key) {
-		if (missedHitHandler != null && !map.containsKey(key)) {
+		if (!map.containsKey(key)) {
+			if (missedHitHandler == null) {
+				throw new RuntimeException("No Missed Hit Handler");
+			}
+
 			V v = missedHitHandler.loadForCache(key);
 			if (v != null) {
 				put(key, v);
@@ -136,7 +134,7 @@ public class LRUCache<K, V> implements ICache<K, V> {
 	private class CacheMap extends LinkedHashMap<K, V> {
 		private static final long serialVersionUID = -3979783834148388956L;
 
-		public CacheMap() {
+		CacheMap() {
 			super(capacity, 0.75f, true);
 		}
 

@@ -5,8 +5,8 @@ import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 
 import java.io.Writer;
 
-class AdroitXppDriver extends Xpp3Driver {
-	private boolean compact = false;
+public class AdroitXppDriver extends Xpp3Driver {
+	private final boolean compact;
 
 	public AdroitXppDriver(boolean compact) {
 		this.compact = compact;

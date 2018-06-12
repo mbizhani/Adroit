@@ -6,7 +6,7 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
 import java.io.Writer;
 
-class AdroitWriter extends PrettyPrintWriter {
+public class AdroitWriter extends PrettyPrintWriter {
 
 	private boolean outputCDATA;
 	private boolean compact = false;

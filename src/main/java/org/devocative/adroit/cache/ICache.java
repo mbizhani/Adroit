@@ -19,11 +19,7 @@ public interface ICache<K, V> {
 
 	Set<Map.Entry<K, V>> getEntries();
 
-	void setMissedHitHandler(IMissedHitHandler<K, V> missedHitHandler);
-
 	void put(K key, V value);
-
-	void update(K key, V value);
 
 	V remove(K key);
 

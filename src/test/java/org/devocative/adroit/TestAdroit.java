@@ -31,8 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TestAdroit {
 	private String keyStorePass = "adroitPassWord";
@@ -319,7 +318,7 @@ public class TestAdroit {
 		}
 
 		Assert.assertTrue(ConfigUtil.keyHasValue(TestConfigKey.NOK));
-		Assert.assertFalse(ConfigUtil.keyHasValidValue(TestConfigKey.NOK));
+		assertFalse(ConfigUtil.keyHasValidValue(TestConfigKey.NOK));
 
 		try {
 			ConfigUtil.getString(TestConfigKey.NOK);
@@ -330,7 +329,7 @@ public class TestAdroit {
 
 		Assert.assertTrue(ConfigUtil.hasKey(TestConfigKey.NOK));
 		Assert.assertTrue(ConfigUtil.hasKey("empty.list.key"));
-		Assert.assertFalse(ConfigUtil.hasKey("my.key"));
+		assertFalse(ConfigUtil.hasKey("my.key"));
 
 		StringEncryptorUtil.init(TestAdroit.class.getResourceAsStream("/adroit.ks"), keyStorePass, entryName, entryProtectionParam);
 		Assert.assertEquals("The Config Value!", ConfigUtil.getString(true, "encrypted.key.suffix"));
@@ -354,7 +353,7 @@ public class TestAdroit {
 
 		File keyStoreFile = new File("adroit.ks");
 		keyStoreFile.delete();
-		Assert.assertFalse(keyStoreFile.exists());
+		assertFalse(keyStoreFile.exists());
 
 		KeyTool.generatedKeyStoreWithSecureKey(keyStoreFile, keyStorePass, "p6oGS8f8vK7V5wRir9EQ", entryName, entryProtectionParam, KeyTool.EKeyLength.L128);
 
@@ -467,58 +466,117 @@ public class TestAdroit {
 
 		Assert.assertNull(ObjectUtil.getPropertyValue(k2, "test", true));
 
-		Assert.assertFalse(ObjectUtil.hasIt(""));
-		Assert.assertFalse(ObjectUtil.hasIt("  "));
+		assertFalse(ObjectUtil.hasIt(""));
+		assertFalse(ObjectUtil.hasIt("  "));
 		Assert.assertTrue(ObjectUtil.hasIt(" a  "));
 
 		Assert.assertTrue(ObjectUtil.isFalse(null));
 		Assert.assertTrue(ObjectUtil.isFalse(false));
-		Assert.assertFalse(ObjectUtil.isTrue(null));
+		assertFalse(ObjectUtil.isTrue(null));
 	}
 
 	@Test
 	public void testLRUCache() {
-		LRUCache<String, Integer> cache = new LRUCache<>(3);
+		Map<String, Integer> data = ObjectBuilder.<String, Integer>map()
+			.put("A", 1)
+			.put("B", 2)
+			.put("C", 3)
+			.put("D", 4)
+			.put("E", 5)
+			.put("F", 6)
+			.put("G", 7)
+			.put("H", 8)
+			.get();
 
-		Assert.assertEquals(0, cache.getSize());
+		LRUCache<String, Integer> cache = new LRUCache<>(3, data::get);
 
-		cache.put("A", 1); // A
-		cache.put("B", 2); // A B
-		cache.put("C", 3); // A B C
-		cache.put("D", 4); // B C D
+		assertEquals(0, cache.getSize());
 
-		Assert.assertEquals(3, cache.getSize());
-		Assert.assertFalse(cache.containsKey("A"));
-		Assert.assertEquals(1, cache.getMissHitCount());
+		assertEquals(1, cache.get("A").intValue());
+		assertEquals("[A]", cache.getKeys().toString());
 
-		cache.put("B", 5); // C D B
-		cache.put("E", 6); // D B E
+		assertEquals(2, cache.get("B").intValue());
+		assertEquals("[A, B]", cache.getKeys().toString());
 
-		Assert.assertEquals(5, (int) cache.get("B")); // D E B
-		Assert.assertFalse(cache.containsKey("C"));
-		Assert.assertEquals(2, cache.getMissHitCount());
+		assertEquals(3, cache.get("C").intValue());
+		assertEquals("[A, B, C]", cache.getKeys().toString());
 
-		Assert.assertEquals(4, (int) cache.get("D")); // E B D
-		cache.put("F", 7); // B D F
-		Assert.assertFalse(cache.containsKey("E"));
+		assertEquals(4, cache.get("D").intValue());
+		assertEquals("[B, C, D]", cache.getKeys().toString());
 
-		cache.get("B"); // D F B
-		cache.put("G", 8); // F B G
-		Assert.assertFalse(cache.containsKey("D"));
+		assertEquals(3, cache.getSize());
+		assertFalse(cache.containsKey("A"));
+		assertEquals(1, cache.getMissHitCount());
 
-		cache.remove("B");
-		Assert.assertEquals(2, cache.getSize());
+		cache.get("B");
+		assertEquals("[C, D, B]", cache.getKeys().toString());
+
+		assertEquals(5, cache.get("E").intValue());
+		assertEquals("[D, B, E]", cache.getKeys().toString());
+
+		assertFalse(cache.containsKey("C"));
+		assertEquals(2, cache.getMissHitCount());
+
+		assertTrue(cache.containsKey("D"));
+		assertEquals("[D, B, E]", cache.getKeys().toString());
 
 		cache.setCapacity(4);
+		assertEquals("[D, B, E]", cache.getKeys().toString());
 
-		cache.put("Z", 11);
-		Assert.assertEquals(3, cache.getSize());
+		cache.remove("E");
+		assertEquals("[D, B]", cache.getKeys().toString());
 
-		cache.put("Y", 12);
-		Assert.assertEquals(4, cache.getSize());
+		assertEquals(6, cache.get("F").intValue());
+		assertEquals("[D, B, F]", cache.getKeys().toString());
+		assertEquals(2, cache.getMissHitCount());
+
+		assertEquals(7, cache.get("G").intValue());
+		assertEquals("[D, B, F, G]", cache.getKeys().toString());
+		assertEquals(2, cache.getMissHitCount());
+
+		assertEquals(8, cache.get("H").intValue());
+		assertEquals("[B, F, G, H]", cache.getKeys().toString());
+		assertEquals(3, cache.getMissHitCount());
+
+		cache.put("I", 9);
+		assertEquals(9, cache.get("I").intValue());
+		assertEquals("[F, G, H, I]", cache.getKeys().toString());
+		assertEquals(4, cache.getMissHitCount());
+
+		try {
+			cache.put("I", 10);
+
+			fail("Duplicate Key Accepted!");
+		} catch (Exception e) {
+			assertEquals("Invalid Put Action, Key Already Exists: I", e.getMessage());
+		}
+
+		assertNull(cache.remove("Y"));
+		assertEquals("[F, G, H, I]", cache.getKeys().toString());
+		assertEquals(4, cache.getMissHitCount());
+
+		assertNull(cache.get("Z"));
+		assertEquals("[F, G, H, I]", cache.getKeys().toString());
+		assertEquals(4, cache.getMissHitCount());
+
+		assertEquals(4, cache.getValues().size());
+		assertEquals("[F, G, H, I]", cache.getKeys().toString());
+		assertEquals(4, cache.getMissHitCount());
+
+		final Set<Map.Entry<String, Integer>> entries = cache.getEntries();
+		for (Map.Entry<String, Integer> entry : entries) {
+			assertEquals("F", entry.getKey());
+			break;
+		}
+		assertEquals("[F, G, H, I]", cache.getKeys().toString());
+		assertEquals(4, cache.getMissHitCount());
+
 
 		cache.clear();
-		Assert.assertEquals(0, cache.getSize());
+		assertEquals(0, cache.getMissHitCount());
+		assertEquals(0, cache.getSize());
+		assertEquals(4, cache.getCapacity());
+		assertEquals("[]", cache.getKeys().toString());
 	}
 
 	@Test
@@ -546,10 +604,10 @@ public class TestAdroit {
 		strings.add("ali");
 		strings.add("ALI");
 
-		Assert.assertFalse(strings.contains("Ali"));
-		Assert.assertFalse(strings.contains("ALi"));
-		Assert.assertFalse(strings.contains("aLi"));
-		Assert.assertFalse(strings.contains("alI"));
+		assertFalse(strings.contains("Ali"));
+		assertFalse(strings.contains("ALi"));
+		assertFalse(strings.contains("aLi"));
+		assertFalse(strings.contains("alI"));
 
 		Assert.assertEquals("ali", strings.get(0));
 		Assert.assertNotEquals("ALI", strings.get(0));
