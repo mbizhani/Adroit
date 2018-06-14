@@ -7,9 +7,80 @@ import com.ibm.icu.util.ULocale;
 
 import java.util.Date;
 
+/*
+List of calendars at
+com.ibm.icu.util.Calendar.CalType
+ */
 public enum EUniCalendar {
-	Gregorian(new ULocale("@calendar=gregorian")),
-	Persian(new ULocale("@calendar=persian"));
+	Gregorian(new ULocale("en_US@calendar=gregorian")),
+
+	/*
+	check at:
+	https://calendar.zoznam.sk/persian_calendar-en.php
+	 */
+	Persian(new ULocale("@calendar=persian")),
+
+	/*
+	check at:
+	http://www.utbf.org/en/resources/calendar/
+	 */
+	Buddhist(new ULocale("en_US@calendar=buddhist")),
+
+	/*
+	?
+	 */
+	Chinese(new ULocale("@calendar=chinese")),
+
+	/*
+	check at:
+	https://calendar.zoznam.sk/coptic_calendar-en.php
+	 */
+	Coptic(new ULocale("@calendar=coptic")),
+
+	/*
+	?
+	 */
+	Dangi(new ULocale("@calendar=dangi")),
+
+	/*
+	check at:
+	https://calendar.zoznam.sk/ethiopian_calendar-en.php
+	 */
+	Ethiopian(new ULocale("@calendar=ethiopic")),
+
+	/*
+	check at:
+	http://www.hebcal.com/converter/
+	 */
+	Hebrew(new ULocale("@calendar=hebrew")),
+
+	/*
+	The Indian Calendar also know as the Saka Calendar or the Hindu Calendar forms the basis in determining
+	Hindu religious festivals. The months of the Indian Hindu Calendar starts with Chaitra and ends with Phalguna.
+
+	check at:
+	http://www.probharat.com/indian-calendars/indian-calendar.php
+	 */
+	Indian(new ULocale("@calendar=indian")),
+
+	/*
+	check at:
+	https://calendar.zoznam.sk/islamic_calendar-en.php
+
+	Islamic Calendar Types:
+	http://cldr.unicode.org/development/development-process/design-proposals/islamic-calendar-types
+	 */
+	Islamic(new ULocale("@calendar=islamic")),
+	IslamicCivil(new ULocale("@calendar=islamic-civil")),
+	IslamicRGSA(new ULocale("@calendar=islamic-rgsa")),
+	IslamicTbla(new ULocale("@calendar=islamic-tbla")),
+	IslamicUmalqura(new ULocale("@calendar=islamic-umalqura")),
+
+	/*
+	check at:
+	http://www.ewc.co.jp/Pages/Information/CalendarEN.aspx
+	 */
+	Japanese(new ULocale("en_US@calendar=japanese")),;
 
 	// ------------------------------
 

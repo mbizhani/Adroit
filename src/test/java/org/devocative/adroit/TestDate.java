@@ -63,6 +63,53 @@ public class TestDate {
 		assertEquals(gr(2018, 1, 10, 0, 0, 0), date.toDate());
 		assertEquals("2018-01-10", date.format("yyyy-MM-dd"));
 
+		date = UniDate.now().updateCalendar(EUniCalendar.Buddhist);
+		System.out.println("Buddhist\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Chinese);
+		System.out.println("Chinese\t\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Coptic);
+		System.out.println("Coptic\t\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Dangi);
+		System.out.println("Dangi\t\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Ethiopian);
+		System.out.println("Ethiopian\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Gregorian);
+		System.out.println("Gregorian\t\t= " + date.format("yyyy MMMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Hebrew);
+		System.out.println("Hebrew\t\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Islamic);
+		System.out.println("Islamic\t\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.IslamicCivil);
+		System.out.println("IslamicCivil\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.IslamicRGSA);
+		System.out.println("IslamicRGSA\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.IslamicTbla);
+		System.out.println("IslamicTbla\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.IslamicUmalqura);
+		System.out.println("IslamicUmalqura = " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Indian);
+		System.out.println("Indian\t\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Persian);
+		System.out.println("Persian\t\t\t= " + date.format("yyyy MMM dd"));
+
+		date = UniDate.now().updateCalendar(EUniCalendar.Japanese);
+		System.out.println("Japanese\t\t= " + date.format("yyyy MMM dd"));
+
+		// Persian <-> Gregorian Conversion Asserts
+
 		date = UniDate.of(EUniCalendar.Persian, "1397-03-17", "yyyy-MM-dd");
 		assertEquals(1397, date.getYear());
 		assertEquals(3, date.getMonth());
