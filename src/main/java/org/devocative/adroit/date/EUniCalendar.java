@@ -107,23 +107,23 @@ public enum EUniCalendar {
 		return format.format(dt);
 	}
 
-	public Date convertToDate(DateFieldVO dateFieldVO, java.util.TimeZone timeZone) {
+	public Date convertToDate(DateTimeFieldVO dateTimeFieldVO, java.util.TimeZone timeZone) {
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(timeZone.getID()), locale);
-		calendar.set(Calendar.YEAR, dateFieldVO.getYear());
-		calendar.set(Calendar.MONTH, dateFieldVO.getMonth() - 1);
-		calendar.set(Calendar.DAY_OF_MONTH, dateFieldVO.getDay());
-		calendar.set(Calendar.HOUR_OF_DAY, dateFieldVO.getHour());
-		calendar.set(Calendar.MINUTE, dateFieldVO.getMinute());
-		calendar.set(Calendar.SECOND, dateFieldVO.getSecond());
-		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.YEAR, dateTimeFieldVO.getYear());
+		calendar.set(Calendar.MONTH, dateTimeFieldVO.getMonth() - 1);
+		calendar.set(Calendar.DAY_OF_MONTH, dateTimeFieldVO.getDay());
+		calendar.set(Calendar.HOUR_OF_DAY, dateTimeFieldVO.getHour());
+		calendar.set(Calendar.MINUTE, dateTimeFieldVO.getMinute());
+		calendar.set(Calendar.SECOND, dateTimeFieldVO.getSecond());
+		calendar.set(Calendar.MILLISECOND, dateTimeFieldVO.getMillisecond());
 		return calendar.getTime();
 	}
 
-	public DateFieldVO convertToFields(Date dt, java.util.TimeZone timeZone) {
+	public DateTimeFieldVO convertToFields(Date dt, java.util.TimeZone timeZone) {
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(timeZone.getID()), locale);
 		calendar.setTime(dt);
 
-		return new DateFieldVO()
+		return new DateTimeFieldVO()
 			.setYear(calendar.get(Calendar.YEAR))
 			.setMonth(calendar.get(Calendar.MONTH) + 1)
 			.setDay(calendar.get(Calendar.DAY_OF_MONTH))

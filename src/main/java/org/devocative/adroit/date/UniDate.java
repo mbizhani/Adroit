@@ -126,8 +126,20 @@ public class UniDate implements Serializable {
 		return mainCal.get(Calendar.SECOND);
 	}
 
+	public int getMillisecond() {
+		return mainCal.get(Calendar.MILLISECOND);
+	}
+
 	public int get(EUniDateField field) {
 		return mainCal.get(field.getValue());
+	}
+
+	public DateTimeFieldVO getDateTimeFields() {
+		return new DateTimeFieldVO(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMillisecond());
+	}
+
+	public TimeFieldVO getTimeFields() {
+		return new TimeFieldVO(getHour(), getMinute(), getSecond(), getMillisecond());
 	}
 
 	public java.util.TimeZone getTimeZone() {
@@ -275,6 +287,15 @@ public class UniDate implements Serializable {
 		cloned.mainCal.set(Calendar.MINUTE, minute);
 		cloned.mainCal.set(Calendar.SECOND, second);
 		cloned.mainCal.set(Calendar.MILLISECOND, millisecond);
+		return cloned;
+	}
+
+	public UniDate setTime(TimeFieldVO time) {
+		UniDate cloned = new UniDate(this);
+		cloned.mainCal.set(Calendar.HOUR_OF_DAY, time.getHour());
+		cloned.mainCal.set(Calendar.MINUTE, time.getMinute());
+		cloned.mainCal.set(Calendar.SECOND, time.getSecond());
+		cloned.mainCal.set(Calendar.MILLISECOND, time.getMillisecond());
 		return cloned;
 	}
 

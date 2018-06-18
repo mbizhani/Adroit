@@ -1,9 +1,7 @@
 package org.devocative.adroit;
 
 import com.ibm.icu.util.Calendar;
-import org.devocative.adroit.date.EUniCalendar;
-import org.devocative.adroit.date.UniDate;
-import org.devocative.adroit.date.UniPeriod;
+import org.devocative.adroit.date.*;
 import org.junit.Test;
 
 import java.util.Date;
@@ -25,6 +23,21 @@ public class TestDate {
 		assertEquals(gr(2018, 5, 29, 1, 2, 3, 456), date.toDate());
 		assertEquals("2018-05-29 01:02:03.456 UTC", date.format("yyyy-MM-dd HH:mm:ss.SSS VV"));
 		assertEquals("2018-05-29 01:02:03.456 UTC", date.toString());
+
+		TimeFieldVO timeFields = date.getTimeFields();
+		assertEquals(1, timeFields.getHour());
+		assertEquals(2, timeFields.getMinute());
+		assertEquals(3, timeFields.getSecond());
+		assertEquals(456, timeFields.getMillisecond());
+
+		DateTimeFieldVO dateTimeFields = date.getDateTimeFields();
+		assertEquals(2018, dateTimeFields.getYear());
+		assertEquals(5, dateTimeFields.getMonth());
+		assertEquals(29, dateTimeFields.getDay());
+		assertEquals(1, dateTimeFields.getHour());
+		assertEquals(2, dateTimeFields.getMinute());
+		assertEquals(3, dateTimeFields.getSecond());
+		assertEquals(456, dateTimeFields.getMillisecond());
 
 		/*
 		y = 2010
@@ -166,6 +179,16 @@ public class TestDate {
 	}
 
 	@Test
+	public void testCalendar() {
+		final Date date = EUniCalendar.Gregorian
+			.convertToDate(
+				new DateTimeFieldVO(2018, 2, 4, 6, 6, 6, 100),
+				TimeZone.getDefault());
+
+		assertEquals(gr(2018, 2, 4, 6, 6, 6, 100), date);
+	}
+
+	@Test
 	public void testTimeZone() {
 		TimeZone.setDefault(TimeZone.getTimeZone("GMT+4"));
 		assertEquals("GMT+04:00", TimeZone.getDefault().getID());
@@ -182,10 +205,19 @@ public class TestDate {
 		assertEquals("13:00:00 GMT+5", date02.format("HH:mm:ss v", TimeZone.getTimeZone("GMT+05:00")));
 		assertTrue(date02.toDate().toString().contains("12:00:00 GMT+04:00"));
 
+		UniDate date = UniDate.of(EUniCalendar.Gregorian, 2018, 1, 1)
+			.setTime(8, 18, 28)
+			.updateTimeZone(TimeZone.getTimeZone("UTC"));
+		assertEquals("2018-01-01 08:18:28.000 UTC", date.toString());
+		assertEquals("Mon Jan 01 12:18:28 GMT+04:00 2018", date.toDate().toString());
+
+		System.out.println("date = " + date.toDate());
+		// ---------------
+
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		assertEquals("UTC", TimeZone.getDefault().getID());
 
-		UniDate date = UniDate.now()
+		date = UniDate.now()
 			.setTime(8, 18, 28);
 		assertEquals(8, date.getHour());
 		assertEquals(18, date.getMinute());
