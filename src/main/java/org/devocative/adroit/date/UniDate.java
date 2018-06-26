@@ -166,6 +166,10 @@ public class UniDate implements Serializable {
 			.format(mainCal.getTime());
 	}
 
+	public UniPeriod diffNow() {
+		return diff(now());
+	}
+
 	public UniPeriod diff(UniDate date) {
 		final long ths = toTimeInMillis();
 		final long tht = date.toTimeInMillis();

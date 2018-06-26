@@ -1,10 +1,13 @@
 package org.devocative.adroit.date;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class UniPeriod {
+public class UniPeriod implements Serializable {
+	private static final long serialVersionUID = -7977197650701429649L;
+
 	private static final long MINUTE_IN_SECONDS = 60;
 	private static final long HOUR_IN_SECONDS = 60 * MINUTE_IN_SECONDS;
 	private static final long DAY_IN_SECONDS = 24 * HOUR_IN_SECONDS;
@@ -86,5 +89,12 @@ public class UniPeriod {
 		}
 
 		return pattern;
+	}
+
+	// ---------------
+
+	@Override
+	public String toString() {
+		return format("H:M:S");
 	}
 }
