@@ -7,6 +7,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SchemaPlugin implements INpsPlugin {
+	/*
+	Patterns to ignore:
+		(['].*?[']) ignore characters between two single quote (SQL string constant)
+		(["].*?["]) ignore characters between two double quote (SQL identifier)
+		(--.*?\n) ignore characters in single line comments
+		(/[*].*?[*]/) ignore characters in inline comments
+		(extract[(].+?[)]) ignore characters in extract() function: it has "from" in its syntax e.g. extract(day from ?)
+
+	Main Pattern:
+		(from|join|into|update)[\s]+(\w+([.]\w+)?) finding table name with schema if mentioned
+	 */
 	private static final String PATTERN =
 		"(['].*?['])|([\"].*?[\"])|(--.*?\\n)|(/[*].*?[*]/)|(extract[(].+?[)])|(from|join|into|update)[\\s]+(\\w+([.]\\w+)?)";
 	private static Pattern SCHEMA_PATTERN;

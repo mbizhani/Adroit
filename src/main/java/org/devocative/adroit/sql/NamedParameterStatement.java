@@ -22,14 +22,12 @@ public class NamedParameterStatement {
 		(["].*?["]) ignore characters between two double quote (SQL identifier)
 		(--.*?\n) ignore characters in single line comments
 		(/[*].*?[*]/) ignore characters in inline comments
-		(extract[(].+?[)]) ignore characters in extract() function: it has "from" in its syntax e.g. extract(day from ?)
 
-	Main Patterns:
-		[:]([\w\d_]+) finding parameter without ':'
-		(from|join|into|update)[\s]+(\w+([.]\w+)?) finding table name with schema if mentioned
+	Main Pattern:
+		[:]([$\w\d_]+) finding parameter without ':'
 	*/
-	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|[:]([\\w\\d_]+)");
-	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|([?])");
+	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|[:](?<PARAM>[$\\w\\d_]+)");
+	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|(?<QMARK>[?])");
 
 	// ------------------------------
 
@@ -74,12 +72,12 @@ public class NamedParameterStatement {
 		Matcher matcher = PARAM_PATTERN.matcher(query);
 
 		while (matcher.find()) {
-			if (matcher.group(4) != null) {
+			if (matcher.group("PARAM") != null) {
 				String param;
 				if (changeToLower) {
-					param = matcher.group(4).toLowerCase();
+					param = matcher.group("PARAM").toLowerCase();
 				} else {
-					param = matcher.group(4);
+					param = matcher.group("PARAM");
 				}
 
 				if (!result.contains(param)) {
@@ -298,7 +296,7 @@ public class NamedParameterStatement {
 		while (matcher.find()) {
 			if (matcher.group(4) != null) {
 				noOfParams++;
-				String param = matcher.group(4);
+				String param = matcher.group("PARAM");
 				logger.debug("Param: {}", param);
 				if (!paramsPlacement.containsKey(param)) {
 					paramsPlacement.put(param, new ArrayList<>());
@@ -349,7 +347,7 @@ public class NamedParameterStatement {
 		matcher = PARAM_Q_MARK_PATTERN.matcher(finalQuery);
 		int idx = 1;
 		while (matcher.find()) {
-			if (matcher.group(4) != null) {
+			if (matcher.group("QMARK") != null) {
 				String replacement = String.format(" ?%s ", idx++);
 				matcher.appendReplacement(builder, replacement);
 			}

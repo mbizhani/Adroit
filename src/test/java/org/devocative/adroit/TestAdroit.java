@@ -11,6 +11,7 @@ import org.devocative.adroit.sql.InitDB;
 import org.devocative.adroit.sql.NamedParameterStatement;
 import org.devocative.adroit.sql.filter.FilterValue;
 import org.devocative.adroit.sql.plugin.FilterPlugin;
+import org.devocative.adroit.sql.plugin.ObjectNavigationPlugin;
 import org.devocative.adroit.sql.plugin.PaginationPlugin;
 import org.devocative.adroit.sql.plugin.SchemaPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
@@ -137,16 +138,43 @@ public class TestAdroit {
 		Assert.assertNull(finalParams.get(1));
 		Assert.assertNull(finalParams.get(2));
 		Assert.assertNull(finalParams.get(3));
+
+
+		final Map<Object, Object> curUser = ObjectBuilder
+			.map()
+			.put("name", "Joe")
+			.put("other", ObjectBuilder.map().put("name", "Jack").put("edu", Arrays.asList(1, 2, 3)).get())
+			.get();
+
+		nps = new NamedParameterStatement(connection)
+			.setQuery("select * from t_person " +
+				"where c_name = :$$curUser$name or c_name = :$$curUser$other$name or f_education in (:$$curUser$other$edu)")
+			.setParameter("$$curUser", curUser)
+			.setIgnoreExtraPassedParam(true)
+		;
+		nps.addPlugin(new ObjectNavigationPlugin());
+
+		final List<String> assertNames = Arrays.asList("Jack", "Joe", "John");
+		no = 0;
+		rs = nps.executeQuery();
+		while (rs.next()) {
+			Assert.assertTrue(assertNames.contains(rs.getString("c_name")));
+			no++;
+		}
+		Assert.assertEquals(assertNames.size(), no);
 	}
 
 	@Test
 	public void testParamOfNPS() {
-		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' -- ignore :this \n" +
-			" /* and ignore :this too */ from dual where 1=:One and 2<>:two or :One=:two", false);
-		Assert.assertEquals(2, paramsInQuery.size());
+		List<String> paramsInQuery = NamedParameterStatement.findParamsInQuery("select 'is :nok' -- ignore :this and\n" +
+				" /* and ignore :this too */ from dual where 1=:One and 2<>:two or :One=:two and :$that=1 or :$$p$t=2",
+			false);
+		Assert.assertEquals(4, paramsInQuery.size());
 		Assert.assertNotEquals("one", paramsInQuery.get(0));
 		Assert.assertEquals("One", paramsInQuery.get(0));
 		Assert.assertEquals("two", paramsInQuery.get(1));
+		Assert.assertEquals("$that", paramsInQuery.get(2));
+		Assert.assertEquals("$$p$t", paramsInQuery.get(3));
 	}
 
 	@Test
