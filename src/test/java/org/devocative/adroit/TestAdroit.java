@@ -338,6 +338,8 @@ public class TestAdroit {
 
 		Assert.assertEquals(0, ConfigUtil.getList(false, "empty.list.key ").size());
 
+		Assert.assertNotNull(ConfigUtil.getList("dummy.key", null));
+
 		try {
 			ConfigUtil.getString(true, "empty.string.key");
 			Assert.assertTrue(false);

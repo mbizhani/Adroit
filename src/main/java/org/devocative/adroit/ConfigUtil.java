@@ -183,7 +183,7 @@ public final class ConfigUtil {
 			}
 			return result;
 		}
-		return defaultValue;
+		return defaultValue != null ? defaultValue : Collections.emptyList();
 	}
 
 	public static List<String> getList(IConfigKey configKey) {
