@@ -119,11 +119,11 @@ public class TestNPS {
 
 		NamedParameterStatement nps = new NamedParameterStatement(connection)
 			.setQuery("select * from t_person where " +
-				"c_name = :$$curUser$name or " +
-				"c_name = :$$curUser$other$name or " +
-				"f_education in (:$$curUser$other$edu) or " +
-				"f_education in (:$$curUser$list$id) or " +
-				"c_name = :$$curUser$unknown")
+				"c_name = :$$curUser.name or " +
+				"c_name = :$$curUser.other.name or " +
+				"f_education in (:$$curUser.other.edu) or " +
+				"f_education in (:$$curUser.list.id) or " +
+				"c_name = :$$curUser.unknown")
 			.setParameter("$$curUser", curUser)
 			.setIgnoreExtraPassedParam(true);
 		nps.addPlugin(new ObjectNavigationPlugin());
@@ -138,12 +138,12 @@ public class TestNPS {
 		Assert.assertEquals(assertNames.size(), no);
 
 		Map<String, Object> params = nps.getOldParams();
-		Assert.assertEquals("Joe", params.get("$$curUser$name"));
-		Assert.assertEquals("Jack", params.get("$$curUser$other$name"));
-		Assert.assertEquals(Arrays.asList(1, 2, 3), params.get("$$curUser$other$edu"));
-		Assert.assertEquals(Arrays.asList(1, 2), params.get("$$curUser$list$id"));
-		Assert.assertTrue(params.containsKey("$$curUser$unknown"));
-		Assert.assertNull(params.get("$$curUser$unknown"));
+		Assert.assertEquals("Joe", params.get("$$curUser.name"));
+		Assert.assertEquals("Jack", params.get("$$curUser.other.name"));
+		Assert.assertEquals(Arrays.asList(1, 2, 3), params.get("$$curUser.other.edu"));
+		Assert.assertEquals(Arrays.asList(1, 2), params.get("$$curUser.list.id"));
+		Assert.assertTrue(params.containsKey("$$curUser.unknown"));
+		Assert.assertNull(params.get("$$curUser.unknown"));
 	}
 
 	@Test

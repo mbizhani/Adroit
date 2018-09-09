@@ -11,8 +11,8 @@ public class ObjectNavigationPlugin implements INpsPlugin {
 	private static final Logger logger = LoggerFactory.getLogger(ObjectNavigationPlugin.class);
 
 	private String specialParamPrefix = "$$";
-	private String propertyNavSplitChar = "$";
-	private String propertyNavSplitCharRegex = "\\$";
+	private String propertyNavSplitChar = ".";
+	private String propertyNavSplitCharRegex = "\\.";
 	private boolean innerCollectionNavigation = true;
 	private boolean forceUnknownProperty = false;
 

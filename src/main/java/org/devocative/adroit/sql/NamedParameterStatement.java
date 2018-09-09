@@ -26,7 +26,7 @@ public class NamedParameterStatement {
 	Main Pattern:
 		[:]([$\w\d_]+) finding parameter without ':'
 	*/
-	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|[:](?<PARAM>[$\\w\\d_]+)");
+	private static final Pattern PARAM_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|[:](?<PARAM>[$\\w\\d_]+[.\\w\\d_]*)");
 	private static final Pattern PARAM_Q_MARK_PATTERN = Pattern.compile("(['].*?['])|(--.*?\\n)|(/[*].*?[*]/)|(?<QMARK>[?])");
 
 	// ------------------------------
