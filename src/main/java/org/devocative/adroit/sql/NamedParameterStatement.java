@@ -33,6 +33,7 @@ public class NamedParameterStatement {
 
 	private Map<String, List<Integer>> paramsPlacement = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<String, Object> params = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Object> oldParams = new HashMap<>();
 	private Map<Integer, Object> finalParams = new LinkedHashMap<>();
 
 	private boolean hasBatch = false;
@@ -175,6 +176,10 @@ public class NamedParameterStatement {
 
 	public Map<String, Object> getParams() {
 		return new HashMap<>(params);
+	}
+
+	public Map<String, Object> getOldParams() {
+		return new HashMap<>(oldParams);
 	}
 
 	public Connection getConnection() {
@@ -409,6 +414,8 @@ public class NamedParameterStatement {
 			}
 		}
 
+		oldParams.clear();
+		oldParams.putAll(params);
 		params.clear();
 	}
 
