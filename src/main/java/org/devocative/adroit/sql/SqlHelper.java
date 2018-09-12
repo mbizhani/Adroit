@@ -43,7 +43,7 @@ public class SqlHelper {
 		return this;
 	}
 
-	public SqlHelper setXMLQueryFile(InputStream in) {
+	public SqlHelper addXMLQueryFile(InputStream in) {
 		XStream xStream = new AdroitXStream();
 		xStream.processAnnotations(XQuery.class);
 

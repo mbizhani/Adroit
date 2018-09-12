@@ -32,7 +32,7 @@ public class PKMigrate {
 	private PKMigrate(Connection connection, String... tables) {
 		this.connection = connection;
 		helper = new SqlHelper(connection);
-		helper.setXMLQueryFile(PKMigrate.class.getResourceAsStream("/oracle_pk_mig.xml"));
+		helper.addXMLQueryFile(PKMigrate.class.getResourceAsStream("/oracle_pk_mig.xml"));
 
 		if (tables != null) {
 			for (String table : tables) {
