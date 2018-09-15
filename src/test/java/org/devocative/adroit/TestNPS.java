@@ -123,8 +123,10 @@ public class TestNPS {
 				"c_name = :$$curUser.other.name or " +
 				"f_education in (:$$curUser.other.edu) or " +
 				"f_education in (:$$curUser.list.id) or " +
-				"c_name = :$$curUser.unknown")
+				"c_name = :$$curUser.unknown or " +
+				"f_education = :$$curPost")
 			.setParameter("$$curUser", curUser)
+			.setParameter("$$curPost", 1)
 			.setIgnoreExtraPassedParam(true);
 		nps.addPlugin(new ObjectNavigationPlugin());
 
@@ -142,6 +144,7 @@ public class TestNPS {
 		Assert.assertEquals("Jack", params.get("$$curUser.other.name"));
 		Assert.assertEquals(Arrays.asList(1, 2, 3), params.get("$$curUser.other.edu"));
 		Assert.assertEquals(Arrays.asList(1, 2), params.get("$$curUser.list.id"));
+		Assert.assertEquals(1, params.get("$$curPost"));
 		Assert.assertTrue(params.containsKey("$$curUser.unknown"));
 		Assert.assertNull(params.get("$$curUser.unknown"));
 	}
