@@ -8,10 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ExportImportHelper {
 	private static final Logger logger = LoggerFactory.getLogger(ExportImportHelper.class);
@@ -62,7 +59,9 @@ public class ExportImportHelper {
 		return new LinkedHashMap<>(dataSets);
 	}
 
-	public void merge(String dataKey, String idCol, String verCol, Map<Object, Object> currentData, Importer... imports) throws SQLException {
+	public Collection<Object> merge(String dataKey, String idCol, String verCol, Map<Object, Object> currentData, Importer... imports) throws SQLException {
+		Set<Object> insertOrUpdatedIds = new HashSet<>();
+
 		if (dataSets.containsKey(dataKey)) {
 			for (Map<String, Object> row : dataSets.get(dataKey)) {
 				Object id = row.get(idCol);
@@ -71,11 +70,15 @@ public class ExportImportHelper {
 				if (currentData.containsKey(id)) {
 					Object currentVer = currentData.get(id);
 					if (ver.compareTo(currentVer) > 0) {
+						insertOrUpdatedIds.add(id);
+
 						for (Importer importer : imports) {
 							importer.addUpdate(row, commonData);
 						}
 					}
 				} else {
+					insertOrUpdatedIds.add(id);
+
 					for (Importer importer : imports) {
 						importer.addInsert(row, commonData);
 					}
@@ -86,6 +89,8 @@ public class ExportImportHelper {
 				importer.executeBatch();
 			}
 		}
+
+		return insertOrUpdatedIds;
 	}
 
 	// ---------------
