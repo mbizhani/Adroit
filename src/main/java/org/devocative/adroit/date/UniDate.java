@@ -362,6 +362,7 @@ public class UniDate implements Serializable {
 		Calendar c = Calendar.getInstance(tz, calendar.getLocale());
 		if (date != null) {
 			c.setTime(date);
+			c.setTimeZone(tz);
 		}
 		return c;
 	}

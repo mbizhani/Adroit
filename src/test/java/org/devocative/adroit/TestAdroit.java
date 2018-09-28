@@ -38,12 +38,13 @@ public class TestAdroit {
 			testFile.delete();
 		}
 
-		ExcelExporter exporter = new ExcelExporter("Sheet");
+		ExcelExporter exporter = new ExcelExporter("Sheet")
+			.setRtl(true);
 
-		exporter.setColumnsHeader(Arrays.asList("A", "B", "C"));
+		exporter.setColumnsHeader(Arrays.asList("A A A A", "B-B-B-B-B-B", "C"));
 
 		for (int i = 0; i < 200; i++) {
-			exporter.addRowData(Arrays.asList(i, "B" + i, "C" + i));
+			exporter.addRowData(Arrays.asList(i, "B" + i, UUID.randomUUID().toString()));
 		}
 
 		FileOutputStream stream = new FileOutputStream("test.xlsx");
