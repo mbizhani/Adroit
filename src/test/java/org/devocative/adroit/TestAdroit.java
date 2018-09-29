@@ -44,7 +44,7 @@ public class TestAdroit {
 		exporter.setColumnsHeader(Arrays.asList("A A A A", "B-B-B-B-B-B", "C"));
 
 		for (int i = 0; i < 200; i++) {
-			exporter.addRowData(Arrays.asList(i, "B" + i, UUID.randomUUID().toString()));
+			exporter.addRowData(Arrays.asList(i, i + " - " + UUID.randomUUID().toString(), UUID.randomUUID().toString()));
 		}
 
 		FileOutputStream stream = new FileOutputStream("test.xlsx");

@@ -28,16 +28,20 @@ public class ExcelExporter {
 		workbook = new SXSSFWorkbook();
 		sheet = workbook.createSheet(sheetName);
 
+		/*
+		TIP: setting font name results in column's auto-adjust malfunction!
+		 */
+
 		Font headerFont = workbook.createFont();
 		headerFont.setBold(true);
-		headerFont.setFontName("Arial");
+		//headerFont.setFontName("Serif");
 		headerStyle = (XSSFCellStyle) workbook.createCellStyle();
 		headerStyle.setFont(headerFont);
 		headerStyle.setFillForegroundColor(new XSSFColor(new Color(200, 200, 200)));
 		headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
 		Font cellFont = workbook.createFont();
-		cellFont.setFontName("Arial");
+		//cellFont.setFontName("Serif");
 		cellStyle = (XSSFCellStyle) workbook.createCellStyle();
 		cellStyle.setFont(cellFont);
 	}
@@ -81,7 +85,7 @@ public class ExcelExporter {
 
 	public void generate(OutputStream outputStream) throws IOException {
 		if (autoSizeColumns) {
-			for (int c = noOfCols; c > 0; c--) {
+			for (int c = 1; c <= noOfCols; c++) {
 				sheet.trackColumnForAutoSizing(c);
 				sheet.autoSizeColumn(c);
 			}
