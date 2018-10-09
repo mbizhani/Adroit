@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.devocative</groupId>
 		<artifactId>dena</artifactId>
-		<version>sivar</version>
+		<version>001-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 
