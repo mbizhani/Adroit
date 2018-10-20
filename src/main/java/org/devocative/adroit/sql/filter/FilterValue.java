@@ -1,6 +1,7 @@
 package org.devocative.adroit.sql.filter;
 
 public class FilterValue {
+	private final String field;
 	private final Object value;
 	private final Object lower;
 	private final Object upper;
@@ -10,26 +11,27 @@ public class FilterValue {
 
 	// ------------------------------
 
-	public static FilterValue equal(Object value) {
-		return new FilterValue(value, FilterType.Equal);
+	public static FilterValue equal(String field, Object value) {
+		return new FilterValue(field, value, FilterType.Equal);
 	}
 
-	public static FilterValue contain(String value) {
-		return new FilterValue(value, FilterType.Contain);
+	public static FilterValue contain(String field, String value) {
+		return new FilterValue(field, value, FilterType.Contain);
 	}
 
 
-	public static FilterValue between(Object lower, Object upper) {
-		return new FilterValue(lower, upper, FilterType.Between);
+	public static FilterValue between(String field, Object lower, Object upper) {
+		return new FilterValue(field, lower, upper, FilterType.Between);
 	}
 
-	public static FilterValue range(Object lower, Object upper) {
-		return new FilterValue(lower, upper, FilterType.Range);
+	public static FilterValue range(String field, Object lower, Object upper) {
+		return new FilterValue(field, lower, upper, FilterType.Range);
 	}
 
 	// ------------------------------
 
-	private FilterValue(Object value, FilterType type) {
+	private FilterValue(String field, Object value, FilterType type) {
+		this.field = field;
 		this.value = value;
 		this.type = type;
 
@@ -37,7 +39,8 @@ public class FilterValue {
 		this.lower = null;
 	}
 
-	private FilterValue(Object lower, Object upper, FilterType type) {
+	private FilterValue(String field, Object lower, Object upper, FilterType type) {
+		this.field = field;
 		this.type = type;
 		this.lower = lower;
 		this.upper = upper;
@@ -45,6 +48,10 @@ public class FilterValue {
 	}
 
 	// ------------------------------
+
+	public String getField() {
+		return field;
+	}
 
 	public Object getValue() {
 		return value;

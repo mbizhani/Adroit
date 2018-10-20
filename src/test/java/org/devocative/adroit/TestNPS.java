@@ -209,7 +209,7 @@ public class TestNPS {
 
 	@Test
 	public void testFilter() throws SQLException {
-		String process = new FilterPlugin().addAll(
+		String process = new FilterPlugin().autoAdd(
 			ObjectBuilder.<String, Object>map()
 				.put("col1", "A")
 				.put("col2", 123)
@@ -221,13 +221,13 @@ public class TestNPS {
 		assertTrue(process.contains("and col3 = :col3"));
 
 		process = new FilterPlugin()
-			.add("cl1", FilterValue.equal(1))
-			.add("cl2", FilterValue.equal(Arrays.asList(1, 3, 5)))
-			.add("cl3", FilterValue.range(new Date(), null))
-			.add("cl4", FilterValue.between(1, 2))
-			.add("cl5", FilterValue.between(1.1, 2.2).setSqlFunc("trunc"))
-			.add("cl6", FilterValue.between(null, 2.2).setSqlFunc("trunc"))
-			.add("cl7", FilterValue.contain("cl7").setSqlFunc("lower"))
+			.add(FilterValue.equal("cl1", 1))
+			.add(FilterValue.equal("cl2", Arrays.asList(1, 3, 5)))
+			.add(FilterValue.range("cl3", new Date(), null))
+			.add(FilterValue.between("cl4", 1, 2))
+			.add(FilterValue.between("cl5", 1.1, 2.2).setSqlFunc("trunc"))
+			.add(FilterValue.between("cl6", null, 2.2).setSqlFunc("trunc"))
+			.add(FilterValue.contain("cl7", "cl7").setSqlFunc("lower"))
 			.process("", ObjectBuilder.<String, Object>map().get());
 		assertTrue(process.contains("and cl1 = :cl1"));
 		assertTrue(process.contains("and cl2 in (:cl2)"));
@@ -237,7 +237,7 @@ public class TestNPS {
 		assertTrue(process.contains("and lower(cl7) like lower(:cl7)"));
 
 		process = new FilterPlugin()
-			.add("c1", FilterValue.equal(1))
+			.add(FilterValue.equal("c1", 1))
 			.process("select * from t1 where 1=1" + FilterPlugin.EMBED_FILTER_EXPRESSION,
 				ObjectBuilder.<String, Object>map().get());
 		assertEquals("select * from t1 where 1=1\tand c1 = :c1\n", process);
@@ -248,7 +248,7 @@ public class TestNPS {
 			new NamedParameterStatement(connection, "select * from t_person")
 				.addPlugin(
 					new FilterPlugin()
-						.add("C_NAME", FilterValue.contain("ja%").setSqlFunc("lower"))
+						.add(FilterValue.contain("C_NAME", "ja%").setSqlFunc("lower"))
 				).executeQuery();
 		List<Object> rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
@@ -259,7 +259,7 @@ public class TestNPS {
 			new NamedParameterStatement(connection, "select * from t_person")
 				.addPlugin(
 					new FilterPlugin()
-						.add("C_Name", FilterValue.contain("%o%"))
+						.add(FilterValue.contain("C_Name", "%o%"))
 				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
@@ -270,7 +270,7 @@ public class TestNPS {
 			new NamedParameterStatement(connection, "select * from t_person")
 				.addPlugin(
 					new FilterPlugin()
-						.add("d_birth_date", FilterValue.range(
+						.add(FilterValue.range("d_birth_date",
 							UniDate.of(EUniCalendar.Gregorian, 2008, 1, 1).toDate(),
 							UniDate.of(EUniCalendar.Gregorian, 2009, 1, 1).toDate()))
 				).executeQuery();
@@ -283,7 +283,7 @@ public class TestNPS {
 			new NamedParameterStatement(connection, "select * from t_person")
 				.addPlugin(
 					new FilterPlugin()
-						.add("f_education", FilterValue.equal(Arrays.asList(2, 4, 6, 8)))
+						.add(FilterValue.equal("f_education", Arrays.asList(2, 4, 6, 8)))
 				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
@@ -294,7 +294,7 @@ public class TestNPS {
 			new NamedParameterStatement(connection, "select * from t_person where 1=1 %FILTER% order by c_name")
 				.addPlugin(
 					new FilterPlugin()
-						.add("f_education", FilterValue.equal(Arrays.asList(2, 4, 6, 8)))
+						.add(FilterValue.equal("f_education", Arrays.asList(2, 4, 6, 8)))
 				).executeQuery();
 		rows = new ArrayList<>();
 		ResultSetProcessor.processRowAsList(rs, rows::add);
