@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>adroit</artifactId>
-	<version>2.1</version>
+	<version>2.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -44,7 +44,7 @@
 		<connection>scm:git:https://github.com/mbizhani/Adroit.git</connection>
 		<developerConnection>scm:git:https://github.com/mbizhani/Adroit.git</developerConnection>
 		<url>https://github.com/mbizhani/Adroit.git</url>
-		<tag>adroit-2.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
